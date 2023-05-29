@@ -3,3 +3,4 @@ Release/*
 */Debug/*
 */Release/*
 .vs/
+*.exe

@@ -93,6 +93,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		break;
 		}
 		break;
+	case WM_RECHECK:
+		CheckStartup(hInst, hWnd);
+		if (!hideTrayIcon) {
+			CreateTrayIcon(hWnd, &nid);
+		}
+		break;
 	case WM_INITMENU:
 		if (autoStartup)
 			CheckMenuItem((HMENU) wParam, IDM_STARTONSYSTEMSTARTUP, MF_BYCOMMAND | MF_CHECKED);
