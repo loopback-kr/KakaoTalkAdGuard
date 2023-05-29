@@ -144,6 +144,7 @@ BOOL CheckStartup(HINSTANCE hInst, HWND hWnd) {
 		autoStartup = false;
 	}
 	RegCloseKey(key);
+	SendMessage(hWnd, WM_INITMENU, 0, 0);
 
 	// Check HideTrayIcon
 	RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &key, &dwDisp);
