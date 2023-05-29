@@ -6,9 +6,8 @@
 !define PRODUCT_NAME "KakaoTalkADGuard"
 !define PRODUCT_VERSION "1.0.0.0"
 !define PRODUCT_PUBLISHER "loopback.kr"
-!define PRODUCT_DIR_ROOT_REGKEY "HKCU"
+!define PRODUCT_REG_ROOTKEY "HKCU"
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
-!define PRODUCT_UNINST_ROOT_KEY "HKCU"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define MUI_ICON "res/logo.ico"
 !define MUI_UNICON "res/logo.ico"
@@ -50,13 +49,13 @@ Section "Installer Section"
     CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 
     WriteUninstaller "$INSTDIR\Uninstall.exe"
-    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_FULLNAME}"
-    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
-    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$\"$INSTDIR\Uninstall.exe$\""
-    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
-    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-    WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1
-    WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoRepair" 1
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_FULLNAME}"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$\"$INSTDIR\Uninstall.exe$\""
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+    WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1
+    WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "NoRepair" 1
 SectionEnd
 
 Section Uninstall
@@ -68,7 +67,8 @@ Section Uninstall
     Delete "$INSTDIR\Uninstall.exe"
     RMDir /r "$SMPROGRAMS\${PRODUCT_NAME}"
     RMDir /r "$INSTDIR"
-    DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
-    DeleteRegKey ${PRODUCT_DIR_ROOT_REGKEY} "${PRODUCT_DIR_REGKEY}"
+    DeleteRegKey ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}"
+    DeleteRegKey ${PRODUCT_REG_ROOTKEY} "${PRODUCT_DIR_REGKEY}"
+    DeleteRegKey ${PRODUCT_REG_ROOTKEY} "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\${PRODUCT_NAME}"
     SetAutoClose true
 SectionEnd
