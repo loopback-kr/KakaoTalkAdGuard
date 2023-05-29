@@ -18,8 +18,8 @@ AD removal tool for Windows KakaoTalk
 
 ### Before
 
-![](docs//Before.png)
+![](Docs//Before.png)
 
 ### After
 
-![](docs//After.png)
+![](Docs//After.png)
