@@ -30,7 +30,7 @@ AD removal tool for Windows KakaoTalk
 
 <sup>May 30, 2023</sup>
 
-- Fixed issue where the send button was removed when sending files.
+- Fixed issue where the send button was removed when sending files in chat room.
 
 ### 1.0.0.0
 
