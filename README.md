@@ -1,11 +1,11 @@
-# KakaoTalk ADGuard
+# ![](Docs/KakaoTalkADGuard.png) KakaoTalk ADGuard
 
 AD removal tool for Windows KakaoTalk
 
 ## Features
 
-- No framework library required.
-- Support Windows and Windows Server including all language versions.
+- No framework libraries required
+- Support Windows and Windows Server including all language versions
 - Support Autorun on system startup
 - Support Installer and Uninstaller
 
@@ -18,8 +18,22 @@ AD removal tool for Windows KakaoTalk
 
 ### Before
 
-![](Docs//Before.png)
+![](Docs/Before.png)
 
 ### After
 
-![](Docs//After.png)
+![](Docs/After.png)
+
+## Release notes
+
+### 1.0.0.1
+
+<sup>May 30, 2023</sup>
+
+- Fixed issue where the send button was removed when sending files.
+
+### 1.0.0.0
+
+<sup>May 29, 2023</sup>
+
+- Initial release

@@ -37,9 +37,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR 
 
 
 	// Message loop
-	MSG msg; while (GetMessage(&msg, nullptr, 0, 0)) {//  메시지큐에서 메시지가 없으면 함수가 종료되지 않음. 즉, 메세지가 생길때까지 계속 대기 함.
-		TranslateMessage(&msg); // WM_KEYDOWN -> WM_CHAR 변환
-		DispatchMessage(&msg); // WndProc으로 전달
+	MSG msg; while (GetMessage(&msg, nullptr, 0, 0)) { // Wait for new message
+		TranslateMessage(&msg); // Translate WM_KEYDOWN to WM_CHAR
+		DispatchMessage(&msg); // Dispatch to WndProc
 	} return (int) msg.wParam;
 }
 
@@ -69,7 +69,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow) {
 	return TRUE;
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) { // OS에 의해 호출됨
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) { // Called by kernel
 	static HANDLE hTimer;
 	static WCHAR appName[64];
 
@@ -245,7 +245,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	switch (idEvent) {
 	case 1: // Remove KakaoTalk ADs
 		RECT RectKakaoTalkMain;
-		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", NULL);
+		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", L"카카오톡");
 		HWND hChildWnd = FindWindowEx(hKakaoTalkMain, NULL, L"EVA_ChildWindow", NULL);
 		HWND hBannerWnd = FindWindowEx(hKakaoTalkMain, NULL, L"BannerAdWnd", NULL);
 		HWND hLockBannerWnd = FindWindowEx(hKakaoTalkMain, NULL, L"EVA_ChildWindow_Dblclk", NULL);
@@ -253,8 +253,8 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 
 		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
 		ShowWindow(hBannerWnd, SW_HIDE);
-		SetWindowPos(hChildWnd, HWND_BOTTOM, 55, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
-		SetWindowPos(hLockBannerWnd, HWND_BOTTOM, 55, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
+		SetWindowPos(hChildWnd, HWND_BOTTOM, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
+		SetWindowPos(hLockBannerWnd, HWND_BOTTOM, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
 		ShowWindow(hPopupWnd, SW_HIDE);
 		break;
 	}
