@@ -23,3 +23,17 @@ AD removal tool for Windows KakaoTalk
 ### After
 
 ![](Docs/After.png)
+
+## Release notes
+
+### 1.0.0.1
+
+<sup>May 30, 2023</sup>
+
+- Fixed issue where the send button was removed when sending files.
+
+### 1.0.0.0
+
+<sup>May 29, 2023</sup>
+
+- Initial release
