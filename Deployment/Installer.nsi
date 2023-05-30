@@ -4,7 +4,7 @@
 # Define consts
 !define PRODUCT_FULLNAME "KakaoTalk ADGuard"
 !define PRODUCT_NAME "KakaoTalkADGuard"
-!define PRODUCT_VERSION "1.0.0.0"
+!define PRODUCT_VERSION "1.0.0.1"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
@@ -34,14 +34,14 @@ ShowUnInstDetails show
 Function .onInit
     FindWindow $0 "${PRODUCT_NAME}"
     StrCmp $0 0 notRunning
-    MessageBox MB_OK|MB_ICONEXCLAMATION "${PRODUCT_FULLNAME} is running. Please close it first" /SD IDOK
+    MessageBox MB_OK|MB_ICONEXCLAMATION "${PRODUCT_FULLNAME} is running. Please close it first." /SD IDOK
     Abort
     notRunning:
 FunctionEnd
 
 Section "Installer Section"
     SetOutPath $INSTDIR
-    File "${PRODUCT_NAME}.exe"
+    File "..\Release\x64\${PRODUCT_NAME}.exe"
     File "RestoreTrayIcon.exe"
     CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
     CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_FULLNAME}.lnk" "$INSTDIR\${PRODUCT_NAME}.exe"
