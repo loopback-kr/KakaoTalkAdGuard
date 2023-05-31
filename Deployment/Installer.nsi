@@ -4,7 +4,7 @@
 # Define consts
 !define PRODUCT_FULLNAME "KakaoTalk ADGuard"
 !define PRODUCT_NAME "KakaoTalkADGuard"
-!define PRODUCT_VERSION "1.0.0.1"
+!define PRODUCT_VERSION "1.0.0.2"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
