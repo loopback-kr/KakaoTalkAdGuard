@@ -82,7 +82,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		bClose = CheckMultipleExecution(hInst, hWnd, szWindowClass);
 		hTimer = (HANDLE) SetTimer(hWnd, 1, updateRate, (TIMERPROC) TimerProc);
 		CheckStartup(hInst, hWnd);
-		if (!hideTrayIcon and !bClose) {
+		if (!hideTrayIcon && !bClose) {
 			CreateTrayIcon(hWnd, &nid);
 		}
 		break;
