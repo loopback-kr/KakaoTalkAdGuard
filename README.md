@@ -26,6 +26,15 @@ AD removal tool for Windows KakaoTalk
 
 ## Release notes
 
+### 1.0.0.2
+
+<sup>Jun. 1, 2023</sup>
+
+- Improved stability of tray icon
+- Improved stability for popup AD removal mechanism
+- Modified context menu items of tray icon
+- Fixed an issue that a registry key was not deleted when uninstalling
+
 ### 1.0.0.1
 
 <sup>May 30, 2023</sup>
