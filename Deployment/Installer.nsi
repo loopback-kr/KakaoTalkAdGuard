@@ -69,6 +69,6 @@ Section Uninstall
     RMDir /r "$INSTDIR"
     DeleteRegKey ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}"
     DeleteRegKey ${PRODUCT_REG_ROOTKEY} "${PRODUCT_DIR_REGKEY}"
-    DeleteRegKey ${PRODUCT_REG_ROOTKEY} "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\${PRODUCT_NAME}"
+    DeleteRegValue ${PRODUCT_REG_ROOTKEY} "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\" "${PRODUCT_NAME}"
     SetAutoClose true
 SectionEnd
