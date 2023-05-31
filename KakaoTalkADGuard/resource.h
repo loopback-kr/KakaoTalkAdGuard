@@ -11,6 +11,7 @@
 #define IDS_MSGBOX_ISRUNNING            107
 #define IDS_MSGBOX_HIDETRAY             108
 #define IDC_KAKAOTALKADGUARD            109
+#define IDS_MSGBOX_RESTORETRAY          111
 #define IDR_MAINFRAME                   128
 #define IDR_TRAY_CONTEXTMENU            133
 #define IDI_ICON1                       134
@@ -25,6 +26,8 @@
 #define ID_EXIT                         32778
 #define IDM_HIDETRAYICON                32779
 #define IDM_STARTONSYSTEMSTARTUP        32780
+#define ID__                            32781
+#define IDM__TEST                       32782
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -33,7 +36,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        135
-#define _APS_NEXT_COMMAND_VALUE         32781
+#define _APS_NEXT_COMMAND_VALUE         32784
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
