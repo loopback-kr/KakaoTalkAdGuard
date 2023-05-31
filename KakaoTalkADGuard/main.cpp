@@ -1,4 +1,4 @@
-#include "framework.h"
+﻿#include "framework.h"
 #include "KakaoTalkADGuard.h"
 
 // Global variables
@@ -248,21 +248,40 @@ void ShowContextMenu(HWND hwnd, POINT pt) {
 	DestroyMenu(hMenu);
 }
 
+BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lparam) {
+	DWORD pid = 0;
+	GetWindowThreadProcessId(hwnd, &pid);
+	if ((DWORD) lparam == pid) {
+		return FALSE; // found
+	} else {
+		return TRUE; // continue
+	}
+}
+
 VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	switch (idEvent) {
 	case 1: // Remove KakaoTalk ADs
+		// Find handles
 		RECT RectKakaoTalkMain;
 		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", L"카카오톡");
 		HWND hChildWnd = FindWindowEx(hKakaoTalkMain, NULL, L"EVA_ChildWindow", NULL);
 		HWND hBannerWnd = FindWindowEx(hKakaoTalkMain, NULL, L"BannerAdWnd", NULL);
 		HWND hLockBannerWnd = FindWindowEx(hKakaoTalkMain, NULL, L"EVA_ChildWindow_Dblclk", NULL);
-		HWND hPopupWnd = FindWindow(L"RichPopWnd", NULL);
+		HWND hPopupWnd = FindWindow(L"RichPopWnd", L"");
+		
+		// Sanity check for Popup AD
+		DWORD pid_main = 0;
+		DWORD pid_popup = 0;
+		GetWindowThreadProcessId(hKakaoTalkMain, &pid_main);
+		GetWindowThreadProcessId(hPopupWnd, &pid_popup);
 
+		// Remove ADs
 		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
 		ShowWindow(hBannerWnd, SW_HIDE);
 		SetWindowPos(hChildWnd, HWND_BOTTOM, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
 		SetWindowPos(hLockBannerWnd, HWND_BOTTOM, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
-		ShowWindow(hPopupWnd, SW_HIDE);
+		if (pid_main == pid_popup)
+			ShowWindow(hPopupWnd, SW_HIDE);
 		break;
 	}
 }
