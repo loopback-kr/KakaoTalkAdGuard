@@ -1,8 +1,9 @@
-﻿#include "framework.h"
+#include "framework.h"
 #include "KakaoTalkADGuard.h"
 
 // Global variables
 HINSTANCE       hInst;
+LPWSTR          szCmdLine = 0;
 WCHAR           szTitle[MAX_LOADSTRING];
 WCHAR           szWindowClass[MAX_LOADSTRING];
 UINT            updateRate = 100;
@@ -26,7 +27,10 @@ VOID CALLBACK    TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer)
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
-
+	// Parse command-line
+	if (lpCmdLine != L"")
+		szCmdLine = lpCmdLine;
+	
 	// Load resources
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDC_KAKAOTALKADGUARD, szWindowClass, MAX_LOADSTRING);
@@ -34,7 +38,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR 
 	// Initialize Window
 	MyRegisterClass(hInstance);
 	if (!InitInstance(hInstance, nCmdShow)) { return FALSE; }
-
 
 	// Message loop
 	MSG msg; while (GetMessage(&msg, nullptr, 0, 0)) { // Wait for new message
@@ -72,13 +75,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow) {
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) { // Called by kernel
 	static HANDLE hTimer;
 	static WCHAR appName[64];
+	BOOL bClose = FALSE;
 
 	switch (message) {
 	case WM_CREATE:
-		CheckMultipleExecution(hInst, hWnd, szWindowClass);
+		bClose = CheckMultipleExecution(hInst, hWnd, szWindowClass);
 		hTimer = (HANDLE) SetTimer(hWnd, 1, updateRate, (TIMERPROC) TimerProc);
 		CheckStartup(hInst, hWnd);
-		if (!hideTrayIcon) {
+		if (!hideTrayIcon and !bClose) {
 			CreateTrayIcon(hWnd, &nid);
 		}
 		break;
@@ -104,7 +108,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			CheckMenuItem((HMENU) wParam, IDM_STARTONSYSTEMSTARTUP, MF_BYCOMMAND | MF_CHECKED);
 		else
 			CheckMenuItem((HMENU) wParam, IDM_STARTONSYSTEMSTARTUP, MF_BYCOMMAND | MF_UNCHECKED);
-		
+
 	case WM_COMMAND:
 	{
 		switch (LOWORD(wParam)) {
@@ -151,7 +155,7 @@ BOOL CheckStartup(HINSTANCE hInst, HWND hWnd) {
 	DWORD dwType = REG_DWORD;
 	DWORD dwValue = 0;
 	DWORD dwDataSize = sizeof(DWORD);
-	DWORD ret = RegQueryValueExW(key, L"HideTrayIcon", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize);
+	DWORD ret = RegQueryValueExW(key, L"HideTrayIcon", 0, &dwType, (LPBYTE) &dwValue, &dwDataSize);
 	if (dwValue) {
 		hideTrayIcon = TRUE;
 	} else {
@@ -200,6 +204,7 @@ BOOL CheckMultipleExecution(HINSTANCE hInst, HWND hWnd, WCHAR szWindowClass[MAX_
 		LoadStringW(hInst, IDS_MSGBOX_ISRUNNING, msgboxIsRunning, MAX_LOADSTRING);
 		MessageBox(hWnd, msgboxIsRunning, NULL, MB_ICONWARNING);
 		PostQuitMessage(0);
+		return 1;
 	}
 	return 0;
 }
@@ -231,6 +236,8 @@ BOOL DeleteTrayIcon(NOTIFYICONDATA nid) {
 void ShowContextMenu(HWND hwnd, POINT pt) {
 	HMENU hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAY_CONTEXTMENU));
 	HMENU hSubMenu = GetSubMenu(hMenu, 0);
+	SetForegroundWindow(hwnd); // our window must be foreground before calling TrackPopupMenu or the menu will not disappear when the user clicks away
+	// respect menu drop alignment
 	UINT uFlags = TPM_RIGHTBUTTON;
 	if (GetSystemMetrics(SM_MENUDROPALIGNMENT) != 0) {
 		uFlags |= TPM_RIGHTALIGN;
