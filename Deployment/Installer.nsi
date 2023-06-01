@@ -35,6 +35,7 @@ ShowInstDetails show
 ShowUnInstDetails show
 
 VIProductVersion "${PRODUCT_VERSION}"
+VIAddVersionKey "FileVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey "FileDescription" "${PRODUCT_FULLNAME} Setup"
 VIAddVersionKey "ProductName" "${PRODUCT_FULLNAME}"
 VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
@@ -62,7 +63,7 @@ Section "Installer Section"
 
     WriteUninstaller "$INSTDIR\Uninstall.exe"
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_FULLNAME}"
-    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$\"$INSTDIR\Uninstall.exe$\""
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$\"$INSTDIR\${PRODUCT_NAME}.exe$\""
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "Comments" "${PRODUCT_COMMENTS}"
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
