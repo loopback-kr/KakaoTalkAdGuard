@@ -32,8 +32,12 @@ AD removal tool for Windows KakaoTalk
 
 - Improved stability of tray icon
 - Improved stability for popup AD removal mechanism
-- Modified context menu items of tray icon
+- Changed context menu items for tray icon
 - Fixed an issue that a registry key was not deleted when uninstalling
+- Update icon for uninstallation
+- Minimized Windows UAC permissions
+- Changed installation mechanism to close running processes
+- Added version attributes and uninstall information
 
 ### 1.0.0.1
 
