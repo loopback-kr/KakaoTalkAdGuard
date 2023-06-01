@@ -28,6 +28,7 @@ InstallDirRegKey HKCU "SOFTWARE\${PRODUCT_NAME}" "InstallPath"
 InstallDir "$APPDATA\${PRODUCT_NAME}"
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 BrandingText /TRIMRIGHT "${PRODUCT_NAME}"
+RequestExecutionLevel user
 ShowInstDetails show
 ShowUnInstDetails show
 

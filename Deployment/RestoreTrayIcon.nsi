@@ -8,6 +8,7 @@
 
 OutFile "RestoreTrayIcon.exe"
 Name "${PRODUCT_NAME} RestoreTrayIcon"
+RequestExecutionLevel user
 AutoCloseWindow true
 
 Function .onInit
