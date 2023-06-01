@@ -1,16 +1,18 @@
 !include "MUI.nsh"
 !include "WinMessages.nsh"
+!include "FileFunc.nsh"
 
 # Define consts
 !define PRODUCT_FULLNAME "KakaoTalk ADGuard"
 !define PRODUCT_NAME "KakaoTalkADGuard"
+!define PRODUCT_COMMENTS "AD removal tool for Windows KakaoTalk"
 !define PRODUCT_VERSION "1.0.0.2"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-!define MUI_ICON "res/logo.ico"
-!define MUI_UNICON "res/logo.ico"
+!define MUI_ICON "res/install.ico"
+!define MUI_UNICON "res/uninstall.ico"
 
 # Pages
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${PRODUCT_NAME}.exe"
@@ -32,6 +34,14 @@ RequestExecutionLevel user
 ShowInstDetails show
 ShowUnInstDetails show
 
+VIProductVersion "${PRODUCT_VERSION}"
+VIAddVersionKey "FileDescription" "${PRODUCT_FULLNAME} Setup"
+VIAddVersionKey "ProductName" "${PRODUCT_FULLNAME}"
+VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
+# VIAddVersionKey "LegalTrademarks" "Test Application is a trademark of Fake company"
+VIAddVersionKey "LegalCopyright" "Copyright (C) 2023 loopback.kr"
+# VIAddVersionKey "OriginalFilename" "${PRODUCT_NAME} ${PRODUCT_VERSION}.exe"
+
 Function .onInit
     FindWindow $0 "${PRODUCT_NAME}"
     StrCmp $0 0 notRunning
@@ -52,10 +62,19 @@ Section "Installer Section"
 
     WriteUninstaller "$INSTDIR\Uninstall.exe"
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_FULLNAME}"
-    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$\"$INSTDIR\Uninstall.exe$\""
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "Comments" "${PRODUCT_COMMENTS}"
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "InstallLocation" "$INSTDIR"
+    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+    WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "EstimatedSize" "$0"
+    # WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "Contact" "mailto:hyunseoki@outlook.kr"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "HelpLink" "https://github.com/loopback-kr/KakaoTalkADGuard/issues"
+    # WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "https://github.com/loopback-kr/KakaoTalkADGuard/issues"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "URLUpdateInfo" "https://github.com/loopback-kr/KakaoTalkADGuard#release-notes"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
     WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1
     WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "NoRepair" 1
 SectionEnd
