@@ -35,8 +35,9 @@ ShowUnInstDetails show
 Function .onInit
     FindWindow $0 "${PRODUCT_NAME}"
     StrCmp $0 0 notRunning
-    MessageBox MB_OK|MB_ICONEXCLAMATION "${PRODUCT_FULLNAME} is running. Please close it first." /SD IDOK
-    Abort
+    SendMessage $0 ${WM_CLOSE} 0 0
+    ; MessageBox MB_OK|MB_ICONEXCLAMATION "${PRODUCT_FULLNAME} is running. Please close it first." /SD IDOK
+    ; Abort
     notRunning:
 FunctionEnd
 
