@@ -1,6 +1,81 @@
 ﻿#include "framework.h"
 #include "KakaoTalkADGuard.h"
 
+#include <bcrypt.h>
+#include <tchar.h>
+#include <TlHelp32.h>
+#include <iostream>
+#include <map>
+#include <vector>
+#include <string>
+#include <memory>
+#include <deque>
+#include <list>
+#include <thread>
+
+#pragma comment(lib, "ntdll")
+#pragma commnet(lib, "user32")
+
+#define EXE_NAME L"KaKaoTalk.exe"
+#define SEMAPHORE_STRING L"97C4DDD9"
+
+#define X64_PATH L"C:\\Program Files (x86)\\Kakao\\KakaoTalk\\KaKaoTalk.exe"
+#define X86_PATH L"C:\\Program Files\\Kakao\\KakaoTalk\\KaKaoTalk.exe"
+
+#define MESSAGE_TITLE L"KaKaoMulti"
+
+#define NT_SUCCESS(status) (status >= 0)
+#define STATUS_INFO_LENGTH_MISMATCH 0xC0000004L
+
+typedef struct _PROCESS_HANDLE_TABLE_ENTRY_INFO {
+	HANDLE HandleValue;
+	ULONG_PTR HandleCount;
+	ULONG_PTR PointerCount;
+	ULONG GrantedAccess;
+	ULONG ObjectTypeIndex;
+	ULONG HandleAttributes;
+	ULONG Reserved;
+} PROCESS_HANDLE_TABLE_ENTRY_INFO;
+
+typedef struct _PROCESS_HANDLE_SNAPSHOT_INFORMATION {
+	ULONG_PTR NumberOfHandles;
+	ULONG_PTR Reserved;
+	PROCESS_HANDLE_TABLE_ENTRY_INFO Handles[1];
+} PROCESS_HANDLE_SNAPSHOT_INFORMATION;
+
+enum PROCESSINFOCLASS {
+	ProcessHandleInformation = 51
+};
+
+typedef enum _OBJECT_INFORMATION_CLASS {
+	ObjectBasicInformation = 0,
+	ObjectNameInformation = 1,
+	ObjectTypeInformation = 2,
+	ObjectAllTypesInformation = 3,
+	ObjectHandleInformation = 4
+} OBJECT_INFORMATION_CLASS;
+
+typedef struct _UNICODE_STRING {
+	USHORT Length;
+	USHORT MaximumLength;
+	PWSTR  Buffer;
+} UNICODE_STRING;
+
+typedef struct _OBJECT_NAME_INFORMATION {
+	UNICODE_STRING Name;
+} OBJECT_NAME_INFORMATION;
+
+extern "C" NTSTATUS __stdcall NtQueryInformationProcess(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
+extern "C" NTSTATUS __stdcall NtQueryObject(HANDLE Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, PVOID ObjectInformation, ULONG ObjectInformationLength, PULONG ReturnLength);
+extern "C" int __stdcall MessageBoxTimeoutW(HWND hwnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType, WORD wLanguageId, DWORD dwMilliseconds);
+
+
+
+
+
+
+
+
 // Global variables
 HINSTANCE       hInst;
 LPWSTR          szCmdLine = 0;
@@ -185,7 +260,7 @@ BOOL ToggleStartup(HWND hWnd) {
 BOOL HideTrayIcon(HINSTANCE hInst, HWND hWnd, NOTIFYICONDATA nid) {
 	WCHAR msgboxHideTray[MAX_LOADSTRING];
 	LoadStringW(hInst, IDS_MSGBOX_HIDETRAY, msgboxHideTray, MAX_LOADSTRING);
-	MessageBox(hWnd, msgboxHideTray, NULL, MB_ICONWARNING);
+	MessageBox(hWnd, msgboxHideTray, L"KakaoTalk ADGuard", MB_ICONINFORMATION);
 	HKEY key; DWORD dwDisp;
 	LSTATUS ret;
 	if (RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &key, &dwDisp) == ERROR_SUCCESS) {
@@ -202,6 +277,7 @@ BOOL CheckMultipleExecution(HINSTANCE hInst, HWND hWnd, WCHAR szWindowClass[MAX_
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
 		WCHAR msgboxIsRunning[MAX_LOADSTRING];
 		LoadStringW(hInst, IDS_MSGBOX_ISRUNNING, msgboxIsRunning, MAX_LOADSTRING);
+		MessageBeep(MB_ICONASTERISK);
 		MessageBox(hWnd, msgboxIsRunning, NULL, MB_ICONWARNING);
 		PostQuitMessage(0);
 		return 1;
@@ -284,4 +360,94 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 			ShowWindow(hPopupWnd, SW_HIDE);
 		break;
 	}
+}
+
+int launchNewKakaoTalkint() {
+	// Find running process, change information
+	std::vector<DWORD> pids = FindProcesses(EXE_NAME);
+	for (DWORD pid : pids) {
+		HANDLE hProcess = OpenProcess(PROCESS_DUP_HANDLE + PROCESS_QUERY_INFORMATION, FALSE, pid);
+		if (!hProcess) continue;
+
+		// Copy processinformation to buffer
+		DWORD dwSize = 0;
+		NTSTATUS status = STATUS_INFO_LENGTH_MISMATCH;
+		std::unique_ptr<BYTE[]> handleInfoBuffer;
+		while (status == STATUS_INFO_LENGTH_MISMATCH) {
+			dwSize += 1024;
+			handleInfoBuffer = std::make_unique<BYTE[]>(dwSize);
+			/*ProcessHandleInformation: Support Windows NT 6.2 or newer*/
+			status = NtQueryInformationProcess(hProcess, ProcessHandleInformation, handleInfoBuffer.get(), dwSize, NULL);
+			if (NT_SUCCESS(status))
+				break;
+		}
+		PROCESS_HANDLE_SNAPSHOT_INFORMATION* info = (PROCESS_HANDLE_SNAPSHOT_INFORMATION*) handleInfoBuffer.get();
+
+		for (auto i = 0; i < info->NumberOfHandles; i++) {
+			HANDLE hTarget;
+			if (!DuplicateHandle(hProcess, info->Handles[i].HandleValue, GetCurrentProcess(), &hTarget, 0, FALSE, DUPLICATE_SAME_ACCESS))
+				continue;
+
+			BYTE pwName[1024] = {0,};
+			BYTE pwType[1024] = {0,};
+			if (!NT_SUCCESS(NtQueryObject(hTarget, ObjectNameInformation, pwName, sizeof(pwName), nullptr)) ||
+				!NT_SUCCESS(NtQueryObject(hTarget, ObjectTypeInformation, pwType, sizeof(pwType), nullptr)))
+				continue;
+			CloseHandle(hTarget);
+
+			UNICODE_STRING* name = (UNICODE_STRING*) pwName;
+			UNICODE_STRING* type = (UNICODE_STRING*) pwType;
+			if (name->Buffer == nullptr || type->Buffer == nullptr)
+				continue;
+
+			if (_wcsicmp(type->Buffer, L"Semaphore") != 0)
+				continue;
+
+			if (wcsstr(name->Buffer, SEMAPHORE_STRING) == NULL)
+				continue;
+
+			if (!DuplicateHandle(hProcess, info->Handles[i].HandleValue, GetCurrentProcess(), &hTarget, 0, FALSE, DUPLICATE_CLOSE_SOURCE))
+				continue;
+
+			CloseHandle(hTarget);
+		}
+	}
+
+	// Run new process
+	STARTUPINFO si = {0,};
+	PROCESS_INFORMATION pi = {0,};
+
+	if (!CreateProcess(X64_PATH, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+		MessageBoxTimeoutW(NULL, L"Load fail.", MESSAGE_TITLE, MB_OK | MB_ICONINFORMATION, 0, 4000);
+		return 0;
+	}
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+
+	MessageBoxTimeoutW(NULL, L"Load Success. Wait for seconds...", MESSAGE_TITLE, MB_OK | MB_ICONINFORMATION, 0, 4000);
+	return 0;
+}
+
+std::vector<DWORD> FindProcesses(const WCHAR* pwFileName) {
+	std::vector<DWORD> pids;
+	HANDLE hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hSnapshot == INVALID_HANDLE_VALUE) {
+		return pids;
+	}
+
+	PROCESSENTRY32 pe = {0,};
+	pe.dwSize = sizeof(pe);
+
+	Process32First(hSnapshot, &pe);
+	while (Process32Next(hSnapshot, &pe)) {
+		if (_wcsicmp(pe.szExeFile, pwFileName) != 0)
+			continue;
+		pids.push_back(pe.th32ProcessID);
+	}
+
+	if (hSnapshot)
+		::CloseHandle(hSnapshot);
+
+	return pids;
 }
