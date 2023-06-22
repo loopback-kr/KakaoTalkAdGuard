@@ -1,12 +1,14 @@
 !include "MUI.nsh"
 !include "WinMessages.nsh"
 !include "FileFunc.nsh"
+!include "x64.nsh"
 
 # Define consts
 !define PRODUCT_FULLNAME "KakaoTalk ADGuard"
 !define PRODUCT_NAME "KakaoTalkADGuard"
 !define PRODUCT_COMMENTS "AD removal tool for Windows KakaoTalk"
-!define PRODUCT_VERSION "1.0.0.2"
+!define PRODUCT_VERSION "1.0.0.3"
+!define BUILD_ARCH "x64"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
 !define PRODUCT_DIR_REGKEY "Software\${PRODUCT_NAME}"
@@ -16,6 +18,7 @@
 
 # Pages
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${PRODUCT_NAME}.exe"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "--startup"
 !define MUI_FINISHPAGE_RUN_TEXT "Run ${PRODUCT_FULLNAME}"
 
 !insertmacro MUI_PAGE_DIRECTORY
@@ -54,11 +57,15 @@ FunctionEnd
 
 Section "Installer Section"
     SetOutPath $INSTDIR
-    File "..\Release\x64\${PRODUCT_NAME}.exe"
-    File "RestoreTrayIcon.exe"
+    ${If} ${RunningX64}
+        File "..\Release\x64\${PRODUCT_NAME}.exe"
+    ${Else}
+        File "..\Release\win32\${PRODUCT_NAME}.exe"
+    ${EndIf}
+    ; File "RestoreTrayIcon.exe"
     CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
-    CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_FULLNAME}.lnk" "$INSTDIR\${PRODUCT_NAME}.exe"
-    CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\Restore tray icon.lnk" "$INSTDIR\RestoreTrayIcon.exe"
+    CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_FULLNAME}.lnk" "$INSTDIR\${PRODUCT_NAME}.exe" "--startup"
+    CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\Restore tray icon.lnk" "$INSTDIR\${PRODUCT_NAME}.exe" "--restore_tray"
     CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 
     WriteUninstaller "$INSTDIR\Uninstall.exe"
