@@ -11,11 +11,13 @@
 #define IDS_MSGBOX_ISRUNNING            107
 #define IDS_MSGBOX_HIDETRAY             108
 #define IDC_KAKAOTALKADGUARD            109
+#define IDC_KAKAOTALKADGUARD_RESTORETRAY 110
 #define IDS_MSGBOX_RESTORETRAY          111
 #define IDR_MAINFRAME                   128
 #define IDR_TRAY_CONTEXTMENU            133
 #define IDI_ICON1                       134
 #define IDI_LOGO                        134
+#define IDR_TRAY_CONTEXTMENU_PORTABLE   134
 #define ID_EXIT_FDSA                    32771
 #define IDM                             32772
 #define IDM_EXIT                        32773

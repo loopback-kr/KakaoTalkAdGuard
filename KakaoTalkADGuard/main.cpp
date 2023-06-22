@@ -10,6 +10,7 @@ UINT            updateRate = 100;
 BOOL            autoStartup = false;
 BOOL            hideTrayIcon = false;
 NOTIFYICONDATA  nid = {sizeof(nid)};
+BOOL            bPortable = true;
 
 // Forward-declaration
 ATOM             MyRegisterClass(HINSTANCE hInstance);
@@ -28,12 +29,17 @@ VOID CALLBACK    TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer)
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
 	// Parse command-line
-	if (lpCmdLine != L"")
+	if (lpCmdLine != L"") {
 		szCmdLine = lpCmdLine;
+	}
 	
 	// Load resources
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadStringW(hInstance, IDC_KAKAOTALKADGUARD, szWindowClass, MAX_LOADSTRING);
+	if (lstrcmpW(szCmdLine, L"--restore_tray") == 0) {
+		LoadStringW(hInstance, IDC_KAKAOTALKADGUARD_RESTORETRAY, szWindowClass, MAX_LOADSTRING);
+	} else {
+		LoadStringW(hInstance, IDC_KAKAOTALKADGUARD, szWindowClass, MAX_LOADSTRING);
+	}
 
 	// Initialize Window
 	MyRegisterClass(hInstance);
@@ -76,13 +82,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	static HANDLE hTimer;
 	static WCHAR appName[64];
 	BOOL bClose = FALSE;
+	BOOL bRestoretray = FALSE;
 
 	switch (message) {
 	case WM_CREATE:
+		// Preprocess arguments
+		if (lstrcmpW(szCmdLine, L"--startup") == 0) {
+			bPortable = false;
+		} else if (lstrcmpW(szCmdLine, L"--restore_tray") == 0) {
+			bRestoretray = TRUE;
+			HKEY key; DWORD dwDisp;
+			if (RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &key, &dwDisp) == ERROR_SUCCESS) {
+				DWORD value = 0;
+				RegSetValueExW(key, L"HideTrayIcon", 0, REG_DWORD, (const BYTE*) &value, sizeof(value));
+			}
+			RegCloseKey(key);
+			HWND hKakaoTalkADGuardMain = FindWindow(L"KakaoTalkADGuard", NULL);
+			if (hKakaoTalkADGuardMain) {
+				SendMessage(hKakaoTalkADGuardMain, WM_RECHECK, NULL, NULL);
+			}
+			PostQuitMessage(0);
+		}
+
 		bClose = CheckMultipleExecution(hInst, hWnd, szWindowClass);
 		hTimer = (HANDLE) SetTimer(hWnd, 1, updateRate, (TIMERPROC) TimerProc);
 		CheckStartup(hInst, hWnd);
-		if (!hideTrayIcon && !bClose) {
+		if (!hideTrayIcon && !bClose && !bRestoretray) {
 			CreateTrayIcon(hWnd, &nid);
 		}
 		break;
@@ -174,8 +199,12 @@ BOOL ToggleStartup(HWND hWnd) {
 		autoStartup = false;
 	} else {
 		WCHAR szFileName[MAX_PATH];
+		WCHAR szFileNameFinal[MAX_PATH] = L"\"";
 		GetModuleFileName(NULL, szFileName, MAX_PATH);
-		RegSetValueExW(key, L"KakaoTalkADGuard", 0, REG_SZ, (LPBYTE) szFileName, (lstrlenW(szFileName) + 1) * sizeof(WCHAR));
+		lstrcatW(szFileNameFinal, szFileName);
+		lstrcatW(szFileNameFinal, L"\"");
+		lstrcatW(szFileNameFinal, L" --startup");
+		RegSetValueExW(key, L"KakaoTalkADGuard", 0, REG_SZ, (LPBYTE) szFileNameFinal, (lstrlenW(szFileNameFinal) + 1) * sizeof(WCHAR));
 		autoStartup = true;
 	}
 	RegCloseKey(key);
@@ -234,7 +263,12 @@ BOOL DeleteTrayIcon(NOTIFYICONDATA nid) {
 }
 
 void ShowContextMenu(HWND hwnd, POINT pt) {
-	HMENU hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAY_CONTEXTMENU));
+	HMENU hMenu;
+	if (bPortable) {
+		hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAY_CONTEXTMENU_PORTABLE));
+	} else {
+		hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAY_CONTEXTMENU));
+	}
 	HMENU hSubMenu = GetSubMenu(hMenu, 0);
 	SetForegroundWindow(hwnd); // our window must be foreground before calling TrackPopupMenu or the menu will not disappear when the user clicks away
 	// respect menu drop alignment
