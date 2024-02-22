@@ -6,7 +6,7 @@ AD removal tool for Windows KakaoTalk
 
 - No framework libraries required
 - Support Windows and Windows Server including all language versions
-- Support Autorun on system startup
+- Support Autorun on system startup (installation version only)
 - Support Installer and Uninstaller
 
 ## Download
