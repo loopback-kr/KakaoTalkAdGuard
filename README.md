@@ -16,7 +16,7 @@ AD removal tool for Windows KakaoTalk
 
 ## Known issues
 
-- In KakaoTalk version 4, the ADs may appear when user log-in at first time. If the KakaoTalk window is moved, the ADs will disappear.
+- In KakaoTalk version 4, Ads can appear when user logs-in or resizes KakaoTalk window. In this case, the ADs will disappear when you move the KakaoTalk window.
 
 - On Windows with HiDPI, the trayicon menu is displayed in an abnormal position.
 
