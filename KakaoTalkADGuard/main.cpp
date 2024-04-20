@@ -292,13 +292,26 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lparam) {
 	}
 }
 
+HWND hChildWnd_chat = NULL;
+BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
+	WCHAR buffer[256];
+	GetClassName(hwnd, buffer, 256);
+	GetWindowText(hwnd, buffer, 256);
+	if (wcsncmp(buffer, L"OnlineMainView_", 15) == 0) {
+		hChildWnd_chat = hwnd;
+		return FALSE;
+	}
+	return TRUE;
+}
+
 VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	switch (idEvent) {
 	case 1: // Remove KakaoTalk ADs
 		// Find handles
-		RECT RectKakaoTalkMain;
 		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", L"카카오톡");
-		HWND hChildWnd = FindWindowEx(hKakaoTalkMain, NULL, L"EVA_ChildWindow", NULL);
+		HWND hChildWnd = FindWindowEx(hKakaoTalkMain, NULL, L"EVA_ChildWindow", L"");
+		EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
+
 		HWND hBannerWnd = FindWindowEx(hKakaoTalkMain, NULL, L"BannerAdWnd", NULL);
 		HWND hLockBannerWnd = FindWindowEx(hKakaoTalkMain, NULL, L"EVA_ChildWindow_Dblclk", NULL);
 		HWND hPopupWnd = FindWindow(L"RichPopWnd", L"");
@@ -306,14 +319,16 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 		// Sanity check for Popup AD
 		DWORD pid_main = 0;
 		DWORD pid_popup = 0;
-		GetWindowThreadProcessId(hKakaoTalkMain, &pid_main);
-		GetWindowThreadProcessId(hPopupWnd, &pid_popup);
+		
+		RECT RectKakaoTalkMain;
+		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
 
 		// Remove ADs
-		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
 		ShowWindow(hBannerWnd, SW_HIDE);
-		SetWindowPos(hChildWnd, HWND_BOTTOM, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
-		SetWindowPos(hLockBannerWnd, HWND_BOTTOM, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
+		SetWindowPos(hChildWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE);
+		SetWindowPos(hChildWnd_chat, HWND_BOTTOM, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE | SWP_NOZORDER);
+		GetWindowThreadProcessId(hKakaoTalkMain, &pid_main);
+		GetWindowThreadProcessId(hPopupWnd, &pid_popup);
 		if (pid_main == pid_popup)
 			ShowWindow(hPopupWnd, SW_HIDE);
 		break;
