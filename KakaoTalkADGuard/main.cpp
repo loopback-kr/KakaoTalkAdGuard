@@ -326,10 +326,19 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	case 1: // Remove KakaoTalk ADs
 		// Find main handle
 		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", L"카카오톡");
+
+		// Block banner AD
 		HWND hKakaoTalkAd = FindWindow(L"EVA_Window_Dblclk", L"");
+		RECT RectKakaoTalkAd;
 		if (GetParent(hKakaoTalkAd) == hKakaoTalkMain) {
-			ShowWindow(hKakaoTalkAd, SW_HIDE);
+			GetWindowRect(hKakaoTalkAd, &RectKakaoTalkAd);
+			int height = RectKakaoTalkAd.bottom - RectKakaoTalkAd.top;
+			if (height == 100) {
+				ShowWindow(hKakaoTalkAd, SW_HIDE);
+			}
 		}
+
+		// Scan ADs recursive
 		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
 		EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
 		EnumChildWindows(hKakaoTalkAd, EnumChildProc, NULL);

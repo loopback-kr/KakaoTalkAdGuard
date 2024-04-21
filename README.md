@@ -26,6 +26,12 @@ AD removal tool for Windows KakaoTalk
 
 ## Release notes
 
+### 1.0.0.6
+
+<sup>Apr. 22, 2024</sup>
+
+- Hotfix for the profile window not appearing issue
+
 ### 1.0.0.5
 
 <sup>Apr. 22, 2024</sup>
