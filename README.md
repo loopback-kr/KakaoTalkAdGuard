@@ -16,8 +16,6 @@ AD removal tool for Windows KakaoTalk
 
 ## Known issues
 
-- In KakaoTalk version 4, Ads can appear when user logs-in or resizes KakaoTalk window. In this case, the ADs will disappear when you move the KakaoTalk window.
-
 - On Windows with HiDPI, the trayicon menu is displayed in an abnormal position.
 
 - If a KakaoTalk process is running on a regular user account that has been promoted to administrator privileges due to a KakaoTalk update, it is not possible to block ADs unless KakaoTalk ADGuard is also running as administrator privileges.
@@ -28,11 +26,17 @@ AD removal tool for Windows KakaoTalk
 
 ## Release notes
 
+### 1.0.0.5
+
+<sup>Apr. 22, 2024</sup>
+
+- Support KakaoTalk version 4
+
 ### 1.0.0.4
 
 <sup>Apr. 20, 2024</sup>
 
-- Support KakaoTalk version 4 (experimental)
+- Hotfix for KakaoTalk version 4 (experimental)
 
 ### 1.0.0.3
 
