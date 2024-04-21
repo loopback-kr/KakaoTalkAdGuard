@@ -304,12 +304,19 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 		if (wcsncmp(windowText, L"OnlineMainView_", 15) == 0) { // Expand chat widget to empty space
 			SetWindowPos(hwnd, HWND_TOP, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
 		}
+		return TRUE;
 	}
 	if (wcscmp(className, L"BannerAdWnd") == 0) {
 		ShowWindow(hwnd, SW_HIDE);
+		return TRUE;
 	}
 	if (wcscmp(className, L"RichPopWnd") == 0) {
 		ShowWindow(hwnd, SW_HIDE);
+		return TRUE;
+	}
+	if (wcscmp(className, L"EVA_VH_ListControl_Dblclk") == 0) {
+		InvalidateRect(hwnd, NULL, TRUE);
+		return TRUE;
 	}
 	return TRUE;
 }
@@ -320,7 +327,9 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 		// Find main handle
 		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", L"카카오톡");
 		HWND hKakaoTalkAd = FindWindow(L"EVA_Window_Dblclk", L"");
-		ShowWindow(hKakaoTalkAd, SW_HIDE);
+		if (GetParent(hKakaoTalkAd) == hKakaoTalkMain) {
+			ShowWindow(hKakaoTalkAd, SW_HIDE);
+		}
 		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
 		EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
 		EnumChildWindows(hKakaoTalkAd, EnumChildProc, NULL);
