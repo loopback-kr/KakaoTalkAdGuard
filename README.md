@@ -24,13 +24,7 @@ AD removal tool for Windows KakaoTalk
 
 ## Preview
 
-### Before
-
-![](Docs/Before.png)
-
-### After
-
-![](Docs/After.png)
+![Highlights](https://github.com/loopback-kr/KakaoTalkADGuard/assets/28856527/493bea2b-87c9-4792-9cfd-c534aec02b14)
 
 ## Release notes
 
