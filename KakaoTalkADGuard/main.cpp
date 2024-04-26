@@ -401,7 +401,15 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	switch (idEvent) {
 	case 1: // Remove KakaoTalk ADs
 		// Find main handle
-		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", L"카카오톡");
+		HWND hKakaoTalkMain = NULL;
+		const WCHAR* kakaoTalkNames[] = {L"카카오톡", L"カカオトーク", L"KakaoTalk"};
+		int numNames = sizeof(kakaoTalkNames) / sizeof(kakaoTalkNames[0]);
+		
+		for (int i = 0; i < numNames; ++i) {
+			hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", kakaoTalkNames[i]);
+			if (hKakaoTalkMain != NULL)
+				break;
+		}
 
 		// Block banner AD
 		HWND hKakaoTalkAd = FindWindow(L"EVA_Window_Dblclk", L"");
