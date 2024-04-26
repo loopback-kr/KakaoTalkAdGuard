@@ -1,4 +1,4 @@
-﻿#include "framework.h"
+#include "framework.h"
 #include "KakaoTalkADGuard.h"
 
 #include <bcrypt.h>
@@ -409,6 +409,19 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 		if (GetParent(hKakaoTalkAd) == hKakaoTalkMain) {
 			GetWindowRect(hKakaoTalkAd, &RectKakaoTalkAd);
 			int height = RectKakaoTalkAd.bottom - RectKakaoTalkAd.top;
+			/*if (height == 100) {
+				ShowWindow(hKakaoTalkAd, SW_HIDE);
+			}*/
+
+			// Beta1
+			//ShowWindow(hKakaoTalkAd, SW_HIDE);
+			/*if (height < 450) {
+				ShowWindow(hKakaoTalkAd, SW_HIDE);
+			} else {
+				char height_buffer[256];
+				sprintf_s(height_buffer, "%d\n", height);
+				OutputDebugStringA((LPCSTR) height_buffer);
+			}*/
 			if (height == 100) {
 				ShowWindow(hKakaoTalkAd, SW_HIDE);
 			}
