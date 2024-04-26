@@ -6,7 +6,7 @@ AD removal tool for Windows KakaoTalk
 
 - No framework libraries required
 - Support Windows and Windows Server including all language versions
-- Support Autorun on system startup
+- Support Autorun on system startup (installation version only)
 - Support Installer and Uninstaller
 
 ## Download
@@ -14,17 +14,35 @@ AD removal tool for Windows KakaoTalk
 - Before or after installation, Specify the installation directory path (default: `%appdata%\KakaoTalkADGuard`) as an exception path in your antivirus software settings. Because this binary file is not well known, antivirus software may detect it as malware.
 - [Go to Release page to download](https://github.com/loopback-kr/KakaoTalkADGuard/releases)
 
+## Known issues
+
+- On Windows with HiDPI, the trayicon menu is displayed in an abnormal position.
+
+- If a KakaoTalk process is running on a regular user account that has been promoted to administrator privileges due to a KakaoTalk update, it is not possible to block ADs unless KakaoTalk ADGuard is also running as administrator privileges.
+
 ## Preview
 
-### Before
-
-![](Docs/Before.png)
-
-### After
-
-![](Docs/After.png)
+![Highlights](https://github.com/loopback-kr/KakaoTalkADGuard/assets/28856527/493bea2b-87c9-4792-9cfd-c534aec02b14)
 
 ## Release notes
+
+### 1.0.0.6
+
+<sup>Apr. 22, 2024</sup>
+
+- Hotfix for the profile window not appearing issue
+
+### 1.0.0.5
+
+<sup>Apr. 22, 2024</sup>
+
+- Support KakaoTalk version 4
+
+### 1.0.0.4
+
+<sup>Apr. 20, 2024</sup>
+
+- Hotfix for KakaoTalk version 4 (experimental)
 
 ### 1.0.0.3
 
