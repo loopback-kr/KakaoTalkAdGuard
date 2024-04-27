@@ -24,6 +24,12 @@ AD removal tool for Windows KakaoTalk
 
 ## Release notes
 
+### 1.0.0.8
+
+<sup>Apr. 27, 2024</sup>
+
+- Hotfix for the lockdown setting window not appearing issue
+
 ### 1.0.0.7
 
 <sup>Apr. 27, 2024</sup>

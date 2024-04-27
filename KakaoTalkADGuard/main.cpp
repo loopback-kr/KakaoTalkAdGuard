@@ -320,7 +320,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 			GetWindowRect(hwnd, &Recthwnd);
 			int width = Recthwnd.right - Recthwnd.left;
 			int height = Recthwnd.bottom - Recthwnd.top;
-			if (height <= 200 && width > height) {
+			if (height < 190 && width > height) {
 				ShowWindow(hwnd, SW_HIDE);
 			}
 		}
@@ -366,7 +366,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 			GetWindowRect(hKakaoTalkAd, &RectKakaoTalkAd);
 			int width = RectKakaoTalkAd.right - RectKakaoTalkAd.left;
 			int height = RectKakaoTalkAd.bottom - RectKakaoTalkAd.top;
-			if (height <= 200 && width > height) {
+			if (height < 190 && width > height) {
 				ShowWindow(hKakaoTalkAd, SW_HIDE);
 			}
 		}
