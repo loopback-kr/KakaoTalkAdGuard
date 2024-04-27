@@ -18,13 +18,20 @@ AD removal tool for Windows KakaoTalk
 
 - On Windows with HiDPI, the trayicon menu is displayed in an abnormal position.
 
-- If a KakaoTalk process is running on a regular user account that has been promoted to administrator privileges due to a KakaoTalk update, it is not possible to block ADs unless KakaoTalk ADGuard is also running as administrator privileges.
-
 ## Preview
 
 ![Highlights](https://github.com/loopback-kr/KakaoTalkADGuard/assets/28856527/493bea2b-87c9-4792-9cfd-c534aec02b14)
 
 ## Release notes
+
+### 1.0.0.7
+
+<sup>Apr. 27, 2024</sup>
+
+- Support for multilingual versions of KakaoTalk
+- Changed banner AD blocking criteria
+- Removed white box at lockdown mode
+- Code refactoring
 
 ### 1.0.0.6
 

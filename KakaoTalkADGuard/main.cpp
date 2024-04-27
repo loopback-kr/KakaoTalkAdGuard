@@ -264,10 +264,22 @@ BOOL DeleteTrayIcon(NOTIFYICONDATA nid) {
 
 void ShowContextMenu(HWND hwnd, POINT pt) {
 	HMENU hMenu;
+	WCHAR szAppName[MAX_LOADSTRING];
+	WCHAR szVersion[MAX_LOADSTRING];
+	WCHAR szFullAppName[MAX_LOADSTRING];
+	szFullAppName[0] = L'\0';
+	LoadStringW(hInst, IDS_APP_NAME, szAppName, MAX_LOADSTRING);
+	LoadStringW(hInst, IDS_APP_VERSION, szVersion, MAX_LOADSTRING);
+	wcscpy_s(szFullAppName, szAppName);
+	wcscat_s(szFullAppName, L" ");
+	wcscat_s(szFullAppName, szVersion);
+
 	if (bPortable) {
 		hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAY_CONTEXTMENU_PORTABLE));
+		ModifyMenuW(hMenu, ID__APP_TITLE, MF_BYCOMMAND | MF_STRING | MF_DISABLED, ID__APP_TITLE, (LPCWSTR) szFullAppName);
 	} else {
 		hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAY_CONTEXTMENU));
+		ModifyMenuW(hMenu, ID__APP_TITLE, MF_BYCOMMAND | MF_STRING | MF_DISABLED, ID__APP_TITLE, (LPCWSTR)szFullAppName);
 	}
 	HMENU hSubMenu = GetSubMenu(hMenu, 0);
 	SetForegroundWindow(hwnd); // our window must be foreground before calling TrackPopupMenu or the menu will not disappear when the user clicks away
@@ -299,12 +311,25 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 	WCHAR windowText[256] = L"";
 	GetClassName(hwnd, className, 256);
 	GetWindowText(hwnd, windowText, 256);
+	RECT Recthwnd;
 
 	if (wcscmp(className, L"EVA_ChildWindow") == 0) {
 		if (wcsncmp(windowText, L"OnlineMainView_", 15) == 0) { // Expand chat widget to empty space
 			SetWindowPos(hwnd, HWND_TOP, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
+		} else if (wcscmp(windowText, L"") == 0) {
+			GetWindowRect(hwnd, &Recthwnd);
+			int width = Recthwnd.right - Recthwnd.left;
+			int height = Recthwnd.bottom - Recthwnd.top;
+			if (height <= 200 && width > height) {
+				ShowWindow(hwnd, SW_HIDE);
+			}
 		}
 		return TRUE;
+	}
+	if (wcsncmp(windowText, L"LockModeView_", 13) == 0) { // Expand numpad in Lockdown mode
+		HWND hLockdownNumpad = FindWindowEx(hwnd, NULL, L"EVA_ChildWindow", L"");
+		if (hLockdownNumpad != NULL)
+			SetWindowPos(hwnd, HWND_TOP, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top), SWP_NOMOVE);
 	}
 	if (wcscmp(className, L"BannerAdWnd") == 0) {
 		ShowWindow(hwnd, SW_HIDE);
@@ -325,15 +350,23 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	switch (idEvent) {
 	case 1: // Remove KakaoTalk ADs
 		// Find main handle
-		HWND hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", L"카카오톡");
+		HWND hKakaoTalkMain = NULL;
+		const WCHAR* kakaoTalkNames[] = {L"카카오톡", L"カカオトーク", L"KakaoTalk"};
+		int numNames = sizeof(kakaoTalkNames) / sizeof(kakaoTalkNames[0]);
+		for (int i = 0; i < numNames; ++i) {
+			hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", kakaoTalkNames[i]);
+			if (hKakaoTalkMain != NULL)
+				break;
+		}
 
 		// Block banner AD
 		HWND hKakaoTalkAd = FindWindow(L"EVA_Window_Dblclk", L"");
 		RECT RectKakaoTalkAd;
 		if (GetParent(hKakaoTalkAd) == hKakaoTalkMain) {
 			GetWindowRect(hKakaoTalkAd, &RectKakaoTalkAd);
+			int width = RectKakaoTalkAd.right - RectKakaoTalkAd.left;
 			int height = RectKakaoTalkAd.bottom - RectKakaoTalkAd.top;
-			if (height == 100) {
+			if (height <= 200 && width > height) {
 				ShowWindow(hKakaoTalkAd, SW_HIDE);
 			}
 		}
@@ -341,9 +374,8 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 		// Scan ADs recursive
 		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
 		EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
-		EnumChildWindows(hKakaoTalkAd, EnumChildProc, NULL);
 		
-		// Sanity check for Popup AD
+		// Block popup AD
 		DWORD pid_main = 0;
 		DWORD pid_popup = 0;
 		HWND hPopupWnd = FindWindow(L"RichPopWnd", L"");
@@ -351,6 +383,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 		GetWindowThreadProcessId(hPopupWnd, &pid_popup);
 		if (pid_main == pid_popup)
 			ShowWindow(hPopupWnd, SW_HIDE);
+		
 		break;
 	}
 }

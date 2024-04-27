@@ -7,7 +7,7 @@
 !define PRODUCT_FULLNAME "KakaoTalk ADGuard"
 !define PRODUCT_NAME "KakaoTalkADGuard"
 !define PRODUCT_COMMENTS "AD removal tool for Windows KakaoTalk"
-!define PRODUCT_VERSION "1.0.0.6"
+!define PRODUCT_VERSION "1.0.0.7"
 !define BUILD_ARCH "x64"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
@@ -58,9 +58,9 @@ FunctionEnd
 Section "Installer Section"
     SetOutPath $INSTDIR
     ${If} ${RunningX64}
-        File "..\Release\x64\${PRODUCT_NAME}.exe"
+        File /oname=${PRODUCT_NAME}.exe "..\Release\x64\${PRODUCT_NAME}.x64.exe"
     ${Else}
-        File "..\Release\win32\${PRODUCT_NAME}.exe"
+        File /oname=${PRODUCT_NAME}.exe "..\Release\win32\${PRODUCT_NAME}.x86.exe"
     ${EndIf}
     ; File "RestoreTrayIcon.exe"
     CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
