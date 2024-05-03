@@ -4,10 +4,10 @@
 !include "x64.nsh"
 
 # Define consts
-!define PRODUCT_FULLNAME "KakaoTalk ADGuard"
-!define PRODUCT_NAME "KakaoTalkADGuard"
-!define PRODUCT_COMMENTS "AD removal tool for Windows KakaoTalk"
-!define PRODUCT_VERSION "1.0.0.8"
+!define PRODUCT_FULLNAME "KakaoTalk AdGuard"
+!define PRODUCT_NAME "KakaoTalkAdGuard"
+!define PRODUCT_COMMENTS "Ad removal tool for Windows KakaoTalk"
+!define PRODUCT_VERSION "1.0.0.9"
 !define BUILD_ARCH "x64"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
@@ -79,9 +79,9 @@ Section "Installer Section"
     IntFmt $0 "0x%08X" $0
     WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "EstimatedSize" "$0"
     # WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "Contact" "mailto:hyunseoki@outlook.kr"
-    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "HelpLink" "https://github.com/loopback-kr/KakaoTalkADGuard/issues"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "HelpLink" "https://github.com/loopback-kr/KakaoTalkAdGuard/issues"
     # WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "https://github.com/loopback-kr/KakaoTalkADGuard/issues"
-    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "URLUpdateInfo" "https://github.com/loopback-kr/KakaoTalkADGuard#release-notes"
+    WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "URLUpdateInfo" "https://github.com/loopback-kr/KakaoTalkAdGuard#release-notes"
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
     WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1
     WriteRegDWORD ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "NoRepair" 1
