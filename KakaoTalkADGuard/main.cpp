@@ -316,13 +316,6 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 	if (wcscmp(className, L"EVA_ChildWindow") == 0) {
 		if (wcsncmp(windowText, L"OnlineMainView_", 15) == 0) { // Expand chat widget to empty space
 			SetWindowPos(hwnd, HWND_TOP, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top - 32), SWP_NOMOVE);
-		} else if (wcscmp(windowText, L"") == 0) {
-			GetWindowRect(hwnd, &Recthwnd);
-			int width = Recthwnd.right - Recthwnd.left;
-			int height = Recthwnd.bottom - Recthwnd.top;
-			if (height < 190 && width > height) {
-				ShowWindow(hwnd, SW_HIDE);
-			}
 		}
 		return TRUE;
 	}
