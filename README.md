@@ -24,6 +24,12 @@ Ad removal tool for Windows KakaoTalk
 
 ## Release notes
 
+### 1.0.0.10
+
+<sup>May 9, 2024</sup>
+
+- Fixed an issue where ads were not blocked when opening a KakaoTalk window and message notification windows were open at the same time
+
 ### 1.0.0.9
 
 <sup>May 4, 2024</sup>

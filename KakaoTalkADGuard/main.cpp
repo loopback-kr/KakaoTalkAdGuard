@@ -1,5 +1,5 @@
 ﻿#include "framework.h"
-#include "KakaoTalkADGuard.h"
+#include "KakaoTalkAdGuard.h"
 
 // Global variables
 HINSTANCE       hInst;
@@ -97,9 +97,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				RegSetValueExW(key, L"HideTrayIcon", 0, REG_DWORD, (const BYTE*) &value, sizeof(value));
 			}
 			RegCloseKey(key);
-			HWND hKakaoTalkADGuardMain = FindWindow(L"KakaoTalkADGuard", NULL);
-			if (hKakaoTalkADGuardMain) {
-				SendMessage(hKakaoTalkADGuardMain, WM_RECHECK, NULL, NULL);
+			HWND hKakaoTalkAdGuardMain = FindWindow(L"KakaoTalkAdGuard", NULL);
+			if (hKakaoTalkAdGuardMain) {
+				SendMessage(hKakaoTalkAdGuardMain, WM_RECHECK, NULL, NULL);
 			}
 			PostQuitMessage(0);
 		}
@@ -167,7 +167,7 @@ BOOL CheckStartup(HINSTANCE hInst, HWND hWnd) {
 	HKEY key; DWORD dwDisp;
 	RegCreateKeyEx(HKEY_CURRENT_USER, REG_RUN, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, &dwDisp);
 
-	if (RegQueryValueExW(key, L"KakaoTalkADGuard", 0, NULL, 0, NULL) == NO_ERROR) {
+	if (RegQueryValueExW(key, L"KakaoTalkAdGuard", 0, NULL, 0, NULL) == NO_ERROR) {
 		autoStartup = true;
 	} else {
 		autoStartup = false;
@@ -194,8 +194,8 @@ BOOL ToggleStartup(HWND hWnd) {
 	HKEY key; DWORD dwDisp;
 	RegCreateKeyEx(HKEY_CURRENT_USER, REG_RUN, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, &dwDisp);
 
-	if (RegQueryValueExW(key, L"KakaoTalkADGuard", 0, NULL, 0, NULL) == NO_ERROR) {
-		RegDeleteValueW(key, L"KakaoTalkADGuard");
+	if (RegQueryValueExW(key, L"KakaoTalkAdGuard", 0, NULL, 0, NULL) == NO_ERROR) {
+		RegDeleteValueW(key, L"KakaoTalkAdGuard");
 		autoStartup = false;
 	} else {
 		WCHAR szFileName[MAX_PATH];
@@ -204,7 +204,7 @@ BOOL ToggleStartup(HWND hWnd) {
 		lstrcatW(szFileNameFinal, szFileName);
 		lstrcatW(szFileNameFinal, L"\"");
 		lstrcatW(szFileNameFinal, L" --startup");
-		RegSetValueExW(key, L"KakaoTalkADGuard", 0, REG_SZ, (LPBYTE) szFileNameFinal, (lstrlenW(szFileNameFinal) + 1) * sizeof(WCHAR));
+		RegSetValueExW(key, L"KakaoTalkAdGuard", 0, REG_SZ, (LPBYTE) szFileNameFinal, (lstrlenW(szFileNameFinal) + 1) * sizeof(WCHAR));
 		autoStartup = true;
 	}
 	RegCloseKey(key);
@@ -304,7 +304,24 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lparam) {
 	}
 }
 
+HWND hKakaoTalkMain;
 RECT RectKakaoTalkMain;
+
+BOOL CALLBACK EnumWindowProc(HWND hwnd, LPARAM lParam) {
+	HWND parentHandle = GetParent(hwnd);
+	WCHAR className[256];
+	GetClassName(hwnd, className, 256);
+
+	if (wcscmp(className, L"EVA_Window_Dblclk") == 0) {
+		HWND hBannerAdChild = FindWindowEx(hwnd, NULL, L"BannerAdContainer", L"");
+		if (hBannerAdChild != NULL) {
+			ShowWindow(hwnd, SW_HIDE);
+			return TRUE;
+		}
+	}	
+	return TRUE;
+}
+
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 	HWND parentHandle = GetParent(hwnd);
 	WCHAR className[256] = L"";
@@ -343,7 +360,6 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	switch (idEvent) {
 	case 1: // Remove KakaoTalk ADs
 		// Find main handle
-		HWND hKakaoTalkMain = NULL;
 		const WCHAR* kakaoTalkNames[] = {L"카카오톡", L"カカオトーク", L"KakaoTalk"};
 		int numNames = sizeof(kakaoTalkNames) / sizeof(kakaoTalkNames[0]);
 		for (int i = 0; i < numNames; ++i) {
@@ -352,20 +368,9 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 				break;
 		}
 
-		// Block banner AD
-		HWND hKakaoTalkAd = FindWindow(L"EVA_Window_Dblclk", L"");
-		RECT RectKakaoTalkAd;
-		if (GetParent(hKakaoTalkAd) == hKakaoTalkMain) {
-			GetWindowRect(hKakaoTalkAd, &RectKakaoTalkAd);
-			int width = RectKakaoTalkAd.right - RectKakaoTalkAd.left;
-			int height = RectKakaoTalkAd.bottom - RectKakaoTalkAd.top;
-			if (height < 190 && width > height) {
-				ShowWindow(hKakaoTalkAd, SW_HIDE);
-			}
-		}
-
 		// Scan ADs recursive
 		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
+		EnumWindows(EnumWindowProc, NULL);
 		EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
 		
 		// Block popup AD

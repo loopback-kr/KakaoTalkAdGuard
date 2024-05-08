@@ -36,8 +36,8 @@ assignees: loopback-kr
  - Administrator privileged KakaoTalk process
     - [ ] Yes
     - [x] No
- - AD Guard version: ?.?.?.?
- - Administrator privileged AD Guard process
+ - AdGuard version: ?.?.?.?
+ - Administrator privileged AdGuard process
     - [ ] Yes
     - [x] No
 

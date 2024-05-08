@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{9622551e-8b4a-4ba3-80e3-53633a00106e}</ProjectGuid>
-    <RootNamespace>KakaoTalkADGuard</RootNamespace>
+    <RootNamespace>KakaoTalkAdGuard</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -146,7 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
-    <ClInclude Include="KakaoTalkADGuard.h" />
+    <ClInclude Include="KakaoTalkAdGuard.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -154,11 +154,11 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KakaoTalkADGuard.rc" />
+    <ResourceCompile Include="KakaoTalkAdGuard.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\Desktop\KakaotalkADGuard.ico" />
-    <Image Include="KakaotalkADGuard.ico" />
+    <Image Include="..\..\..\Desktop\KakaotalkAdGuard.ico" />
+    <Image Include="KakaotalkAdGuard.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

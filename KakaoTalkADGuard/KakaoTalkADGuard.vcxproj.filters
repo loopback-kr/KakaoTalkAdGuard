@@ -24,7 +24,7 @@
     <ClInclude Include="Resource.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="KakaoTalkADGuard.h">
+    <ClInclude Include="KakaoTalkAdGuard.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -34,15 +34,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KakaoTalkADGuard.rc">
+    <ResourceCompile Include="KakaoTalkAdGuard.rc">
       <Filter>리소스 파일</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\Desktop\KakaotalkADGuard.ico">
+    <Image Include="..\..\..\Desktop\KakaotalkAdGuard.ico">
       <Filter>리소스 파일</Filter>
     </Image>
-    <Image Include="KakaotalkADGuard.ico">
+    <Image Include="KakaotalkAdGuard.ico">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>

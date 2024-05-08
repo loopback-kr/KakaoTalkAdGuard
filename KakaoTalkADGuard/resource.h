@@ -1,6 +1,6 @@
 ﻿//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by KakaoTalkADGuard.rc
+// Used by KakaoTalkAdGuard.rc
 //
 #define IDC_MYICON                      2
 #define IDD_KAKAOTALKADGUARD_DIALOG     102
