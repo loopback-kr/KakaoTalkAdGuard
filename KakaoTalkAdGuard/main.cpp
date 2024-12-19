@@ -305,6 +305,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lparam) {
 }
 
 HWND hKakaoTalkMain;
+HWND hAdFit;
 RECT RectKakaoTalkMain;
 
 BOOL CALLBACK EnumWindowProc(HWND hwnd, LPARAM lParam) {
@@ -353,6 +354,17 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 		InvalidateRect(hwnd, NULL, TRUE);
 		return TRUE;
 	}
+
+	if (wcsncmp(className, L"Chrome_WidgetWin_", 17) == 0) {
+		ShowWindow(hwnd, SW_HIDE);
+		parentHandle = GetParent(parentHandle);
+		ShowWindow(parentHandle, SW_HIDE);
+		parentHandle = GetParent(parentHandle);
+		ShowWindow(parentHandle, SW_HIDE);
+		parentHandle = GetParent(parentHandle);
+		ShowWindow(parentHandle, SW_HIDE);
+		return TRUE;
+	}
 	return TRUE;
 }
 
@@ -366,6 +378,11 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 			hKakaoTalkMain = FindWindow(L"EVA_Window_Dblclk", kakaoTalkNames[i]);
 			if (hKakaoTalkMain != NULL)
 				break;
+		}
+
+		hAdFit = FindWindow(L"EVA_Window_Dblclk", L"");
+		if (hAdFit != NULL) {
+			EnumChildWindows(hAdFit, EnumChildProc, NULL);
 		}
 
 		// Scan ADs recursive

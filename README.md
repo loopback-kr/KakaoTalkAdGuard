@@ -24,6 +24,12 @@ Ad removal tool for Windows KakaoTalk
 
 ## Release notes
 
+### 1.0.0.11
+
+<sup>Dec. 19, 2024</sup>
+
+- Fixed an issue with ADs appearing in version 4.3.0.4263
+
 ### 1.0.0.10
 
 <sup>May 9, 2024</sup>
