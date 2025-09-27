@@ -18,11 +18,15 @@ Ad removal tool for Windows KakaoTalk
 
 - On Windows with HiDPI, the trayicon menu is displayed in an abnormal position.
 
-## Preview
-
-![Highlights](https://github.com/loopback-kr/KakaoTalkAdGuard/assets/28856527/493bea2b-87c9-4792-9cfd-c534aec02b14)
-
 ## Release notes
+
+### 1.1.0.0
+
+<sup>Sept. 27, 2025</sup>
+
+- Support KakaoTalk 25.8.1.4748
+- Fixed an issue that other windows unrelated to KakaoTalk would disappear
+- Changed banner ad blocking method
 
 ### 1.0.0.11
 

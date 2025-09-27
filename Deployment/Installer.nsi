@@ -7,7 +7,7 @@
 !define PRODUCT_FULLNAME "KakaoTalk AdGuard"
 !define PRODUCT_NAME "KakaoTalkAdGuard"
 !define PRODUCT_COMMENTS "Ad removal tool for Windows KakaoTalk"
-!define PRODUCT_VERSION "1.0.0.11"
+!define PRODUCT_VERSION "1.1.0.0"
 !define BUILD_ARCH "x64"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
@@ -43,7 +43,7 @@ VIAddVersionKey "FileDescription" "${PRODUCT_FULLNAME} Setup"
 VIAddVersionKey "ProductName" "${PRODUCT_FULLNAME}"
 VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
 # VIAddVersionKey "LegalTrademarks" "Test Application is a trademark of Fake company"
-VIAddVersionKey "LegalCopyright" "Copyright (C) 2024 loopback.kr"
+VIAddVersionKey "LegalCopyright" "Copyright (C) 2024-2025 loopback.kr"
 # VIAddVersionKey "OriginalFilename" "${PRODUCT_NAME} ${PRODUCT_VERSION}.exe"
 
 Function .onInit

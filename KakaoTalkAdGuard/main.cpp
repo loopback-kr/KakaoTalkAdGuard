@@ -1,12 +1,14 @@
 ﻿#include "framework.h"
 #include "KakaoTalkAdGuard.h"
+#include <chrono>
+#include <string>
 
 // Global variables
 HINSTANCE       hInst;
 LPWSTR          szCmdLine = 0;
 WCHAR           szTitle[MAX_LOADSTRING];
 WCHAR           szWindowClass[MAX_LOADSTRING];
-UINT            updateRate = 100;
+UINT            updateRate = 500;
 BOOL            autoStartup = false;
 BOOL            hideTrayIcon = false;
 NOTIFYICONDATA  nid = {sizeof(nid)};
@@ -95,8 +97,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			if (RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &key, &dwDisp) == ERROR_SUCCESS) {
 				DWORD value = 0;
 				RegSetValueExW(key, L"HideTrayIcon", 0, REG_DWORD, (const BYTE*) &value, sizeof(value));
+				RegCloseKey(key);
 			}
-			RegCloseKey(key);
 			HWND hKakaoTalkAdGuardMain = FindWindow(L"KakaoTalkAdGuard", NULL);
 			if (hKakaoTalkAdGuardMain) {
 				SendMessage(hKakaoTalkAdGuardMain, WM_RECHECK, NULL, NULL);
@@ -220,8 +222,8 @@ BOOL HideTrayIcon(HINSTANCE hInst, HWND hWnd, NOTIFYICONDATA nid) {
 	if (RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &key, &dwDisp) == ERROR_SUCCESS) {
 		DWORD value = 1;
 		ret = RegSetValueExW(key, L"HideTrayIcon", 0, REG_DWORD, (const BYTE*) &value, sizeof(value));
+		RegCloseKey(key);
 	}
-	RegCloseKey(key);
 	DeleteTrayIcon(nid);
 	return 0;
 }
@@ -307,25 +309,52 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lparam) {
 HWND hKakaoTalkMain;
 HWND hAdFit;
 RECT RectKakaoTalkMain;
+BOOL g_bFoundWebAd = FALSE;
+
+typedef struct {
+	LPCWSTR targetClassName;
+	BOOL bFoundTarget;
+} FIND_DATA;
+
+
+BOOL CALLBACK FindChromeAndHide(HWND hwndChild, LPARAM lParam) {
+	FIND_DATA* pFindClassName = reinterpret_cast<FIND_DATA*>(lParam);
+	WCHAR className[256];
+	if (GetClassName(hwndChild, className, 256) > 0) {
+		if (wcsncmp(className, pFindClassName->targetClassName, 17) == 0) {
+			ShowWindow(hwndChild, SW_HIDE);
+			g_bFoundWebAd = TRUE;
+			return FALSE;
+		}
+	}
+	EnumChildWindows(hwndChild, FindChromeAndHide, lParam);
+
+	return TRUE;
+}
 
 BOOL CALLBACK EnumWindowProc(HWND hwnd, LPARAM lParam) {
+	FIND_DATA* pFindClassName = reinterpret_cast<FIND_DATA*>(lParam);
 	HWND parentHandle = GetParent(hwnd);
 	WCHAR className[256];
+	WCHAR windowText[256] = L"";
 	GetClassName(hwnd, className, 256);
+	GetWindowText(hwnd, windowText, 256);
 
-	if (wcscmp(className, L"EVA_Window_Dblclk") == 0) {
-		HWND hBannerAdChild = FindWindowEx(hwnd, NULL, L"BannerAdContainer", L"");
-		if (hBannerAdChild != NULL) {
+	if (wcscmp(className, pFindClassName->targetClassName) == 0 && wcscmp(windowText, L"") == 0) {
+		FIND_DATA targetClassName = { L"Chrome_WidgetWin_", FALSE };
+		g_bFoundWebAd = FALSE;
+		EnumChildWindows(hwnd, FindChromeAndHide, (LPARAM)&targetClassName);
+		if (g_bFoundWebAd) {
 			ShowWindow(hwnd, SW_HIDE);
-			return TRUE;
 		}
-	}	
+	}
 	return TRUE;
 }
 
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 	HWND parentHandle = GetParent(hwnd);
 	WCHAR className[256] = L"";
+	WCHAR parentClassName[256] = L"";
 	WCHAR windowText[256] = L"";
 	GetClassName(hwnd, className, 256);
 	GetWindowText(hwnd, windowText, 256);
@@ -342,30 +371,79 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 		if (hLockdownNumpad != NULL)
 			SetWindowPos(hwnd, HWND_TOP, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top), SWP_NOMOVE);
 	}
-	if (wcscmp(className, L"BannerAdWnd") == 0) {
+	//if (wcscmp(className, L"BannerAdWnd") == 0) {
+	//	ShowWindow(hwnd, SW_HIDE);
+	//	return TRUE;
+	//}
+	//if (wcscmp(className, L"RichPopWnd") == 0) {
+	//	ShowWindow(hwnd, SW_HIDE);
+	//	return TRUE;
+	//}
+	//if (wcscmp(className, L"EVA_VH_ListControl_Dblclk") == 0) {
+	//	InvalidateRect(hwnd, NULL, TRUE);
+	//	return TRUE;
+	//}
+
+	/*if (wcsncmp(className, L"Chrome_WidgetWin_", 17) == 0) {
 		ShowWindow(hwnd, SW_HIDE);
+		parentHandle = GetParent(parentHandle);
+		ShowWindow(parentHandle, SW_HIDE);
+		parentHandle = GetParent(parentHandle);
+		ShowWindow(parentHandle, SW_HIDE);
+		parentHandle = GetParent(parentHandle);
+		ShowWindow(parentHandle, SW_HIDE);
 		return TRUE;
-	}
-	if (wcscmp(className, L"RichPopWnd") == 0) {
-		ShowWindow(hwnd, SW_HIDE);
-		return TRUE;
-	}
-	if (wcscmp(className, L"EVA_VH_ListControl_Dblclk") == 0) {
-		InvalidateRect(hwnd, NULL, TRUE);
-		return TRUE;
+	}*/
+	//if (wcscmp(className, L"Intermediate D3D Window") == 0) {
+	//	parentHandle = GetParent(parentHandle);
+	//	GetClassName(parentHandle, parentClassName, 256);
+	//	if (wcsncmp(parentClassName, L"Chrome_WidgetWin_", 17) == 0) {
+	//		ShowWindow(hwnd, SW_HIDE);
+	//		//ShowWindow(parentHandle, SW_HIDE);
+	//	}
+	//	return TRUE;
+	//}
+
+
+	//if (wcscmp(className, L"EVA_Window_Dblclk") == 0 && parentHandle == ownerHandle) {
+	//	ShowWindow(hwnd, SW_HIDE);
+	//}
+
+	return TRUE;
+}
+
+void SetLUDForAllSubkeys() {
+	HKEY hParentKey;
+	if (RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Kakao\\AdFit", 0, KEY_READ | KEY_WRITE | KEY_ENUMERATE_SUB_KEYS, &hParentKey) != ERROR_SUCCESS) {
+		return;
 	}
 
-	if (wcsncmp(className, L"Chrome_WidgetWin_", 17) == 0) {
-		ShowWindow(hwnd, SW_HIDE);
-		parentHandle = GetParent(parentHandle);
-		ShowWindow(parentHandle, SW_HIDE);
-		parentHandle = GetParent(parentHandle);
-		ShowWindow(parentHandle, SW_HIDE);
-		parentHandle = GetParent(parentHandle);
-		ShowWindow(parentHandle, SW_HIDE);
-		return TRUE;
+	DWORD dwIndex = 0;
+	wchar_t subkeyName[256];
+	DWORD subkeyNameSize = sizeof(subkeyName) / sizeof(wchar_t);
+	FILETIME ftLastWritten;
+
+	while (RegEnumKeyExW(hParentKey, dwIndex, subkeyName, &subkeyNameSize, NULL, NULL, NULL, &ftLastWritten) == ERROR_SUCCESS) {
+
+		std::wstring subkeyPath = L"SOFTWARE\\Kakao\\AdFit\\";
+		subkeyPath += subkeyName;
+
+		HKEY hSubKey;
+		DWORD dwDisp;
+		if (RegCreateKeyExW(HKEY_CURRENT_USER, subkeyPath.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hSubKey, &dwDisp) == ERROR_SUCCESS) {
+
+			auto now = std::chrono::system_clock::now();
+			auto posix_time = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+			std::wstring str_time = std::to_wstring(posix_time);
+
+			RegSetValueExW(hSubKey, L"LUD", 0, REG_SZ, (const BYTE*)str_time.c_str(), (str_time.length() + 1) * sizeof(wchar_t));
+			RegCloseKey(hSubKey);
+		}
+
+		dwIndex++;
+		subkeyNameSize = sizeof(subkeyName) / sizeof(wchar_t);
 	}
-	return TRUE;
+	RegCloseKey(hParentKey);
 }
 
 VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
@@ -380,25 +458,14 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 				break;
 		}
 
-		hAdFit = FindWindow(L"EVA_Window_Dblclk", L"");
-		if (hAdFit != NULL) {
-			EnumChildWindows(hAdFit, EnumChildProc, NULL);
-		}
+		// Block popup AD
+		SetLUDForAllSubkeys();
 
 		// Scan ADs recursive
 		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
-		EnumWindows(EnumWindowProc, NULL);
+		FIND_DATA targetClassName = { L"EVA_Window_Dblclk", FALSE };
+		EnumWindows(EnumWindowProc, (LPARAM)&targetClassName);
 		EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
-		
-		// Block popup AD
-		DWORD pid_main = 0;
-		DWORD pid_popup = 0;
-		HWND hPopupWnd = FindWindow(L"RichPopWnd", L"");
-		GetWindowThreadProcessId(hKakaoTalkMain, &pid_main);
-		GetWindowThreadProcessId(hPopupWnd, &pid_popup);
-		if (pid_main == pid_popup)
-			ShowWindow(hPopupWnd, SW_HIDE);
-		
 		break;
 	}
 }
