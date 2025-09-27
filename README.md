@@ -2,12 +2,6 @@
 
 Ad removal tool for Windows KakaoTalk
 
-## HOTFIX
-- https://github.com/kndol/KakaoTalkAdGuard
-- Fixed an issue where the chromium browser window disappears when KakaoTalk is not running but KakaoTalkAdGuard is running
-- Fixed an issue where KakaoTalk disappeared when opening the notification window of KakaoTalk.
-- Fixed by KnDol
-
 ## Features
 
 - No framework libraries required
