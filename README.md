@@ -25,14 +25,20 @@ Ad removal tool for Windows KakaoTalk
 
 ## Release notes
 
+### 1.2.0.1
+
+<sup>Sept. 28, 2025</sup>
+
+- Fixed an bug that all windows redraw incorrectly when KakaoTalk process is not running
+
 ### 1.2.0.0
 
 <sup>Sept. 28, 2025</sup>
 
 - Support checking for new releases
-- Added each feature list to the tray menu to enable selective activation of ad-blocking functions.
-- Fixed an issue where drawing becomes invalid when the KakaoTalk window is inactivated.
-- Added check boxes for enabling autorun and update check in the installer.
+- Added each feature list to the tray menu to enable selective activation of ad-blocking functions
+- Fixed an issue where drawing becomes invalid when the KakaoTalk window is inactivated
+- Added check boxes for enabling autorun and update check in the installer
 
 ### 1.1.0.0
 

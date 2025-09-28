@@ -8,7 +8,7 @@
 !define PRODUCT_FULLNAME "KakaoTalk AdGuard"
 !define PRODUCT_NAME "KakaoTalkAdGuard"
 !define PRODUCT_COMMENTS "Ad removal tool for Windows KakaoTalk"
-!define PRODUCT_VERSION "1.2.0.0"
+!define PRODUCT_VERSION "1.2.0.1"
 !define BUILD_ARCH "x64"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"

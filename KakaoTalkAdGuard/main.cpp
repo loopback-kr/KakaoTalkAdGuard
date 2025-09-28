@@ -554,12 +554,13 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 		}
 
 		// Scan ADs recursive
-		HWND hParent = GetParent(hwnd);
-		if (bHideMainPannelAd) {
-			GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
-			FIND_DATA targetClassName = { L"EVA_Window_Dblclk", FALSE };
-			EnumWindows(EnumWindowProc, (LPARAM)&targetClassName);
-			EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
+		if (hKakaoTalkMain != NULL) {
+			if (bHideMainPannelAd) {
+				GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
+				FIND_DATA targetClassName = { L"EVA_Window_Dblclk", FALSE };
+				EnumWindows(EnumWindowProc, (LPARAM)&targetClassName);
+				EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
+			}
 		}
 
 		break;
