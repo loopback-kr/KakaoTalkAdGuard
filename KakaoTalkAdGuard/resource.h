@@ -1,6 +1,6 @@
 ﻿//{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by KakaoTalkAdGuard.rc
+// Microsoft Visual C++에서 생성한 포함 파일입니다.
+// KakaoTalkAdGuard.rc에서 사용되고 있습니다.
 //
 #define IDC_MYICON                      2
 #define IDD_KAKAOTALKADGUARD_DIALOG     102
@@ -32,6 +32,13 @@
 #define ID__                            32781
 #define IDM__TEST                       32782
 #define ID__APP_TITLE                   32783
+#define ID_Menu                         32784
+#define ID__UPDATEBANNERADREGISTRY      32785
+#define ID__HIDEMAINPANNELAD            32786
+#define IDM_HIDEMAINPANNELAD            32787
+#define IDM_UPDATEBANNERADREGISTRY      32788
+#define IDM_CHECKUPDATE                 32789
+#define IDM_CsUpdate                    32790
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -40,7 +47,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        135
-#define _APS_NEXT_COMMAND_VALUE         32784
+#define _APS_NEXT_COMMAND_VALUE         32791
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

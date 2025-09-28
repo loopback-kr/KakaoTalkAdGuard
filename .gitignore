@@ -1,6 +1,5 @@
-Debug/*
-Release/*
-*/Debug/*
-*/Release/*
-.vs/
+bin/
 *.exe
+.vs/
+**/Debug/
+**/Release/

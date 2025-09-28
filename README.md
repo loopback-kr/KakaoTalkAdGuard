@@ -8,6 +8,7 @@ Ad removal tool for Windows KakaoTalk
 - Support Windows and Windows Server including all language versions
 - Support Autorun on system startup (installation version only)
 - Support Installer and Uninstaller
+- Support Check for new releases
 
 ## Download
 
@@ -18,7 +19,20 @@ Ad removal tool for Windows KakaoTalk
 
 - On Windows with HiDPI, the trayicon menu is displayed in an abnormal position.
 
+## Preview
+
+![Highlights](https://github.com/loopback-kr/KakaoTalkAdGuard/assets/28856527/493bea2b-87c9-4792-9cfd-c534aec02b14)
+
 ## Release notes
+
+### 1.2.0.0
+
+<sup>Sept. 28, 2025</sup>
+
+- Support checking for new releases
+- Added each feature list to the tray menu to enable selective activation of ad-blocking functions.
+- Fixed an issue where drawing becomes invalid when the KakaoTalk window is inactivated.
+- Added check boxes for enabling autorun and update check in the installer.
 
 ### 1.1.0.0
 

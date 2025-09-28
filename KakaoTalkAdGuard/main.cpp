@@ -2,17 +2,22 @@
 #include "KakaoTalkAdGuard.h"
 #include <chrono>
 #include <string>
+#include <winhttp.h>
+#pragma comment(lib, "winhttp.lib")
 
 // Global variables
 HINSTANCE       hInst;
 LPWSTR          szCmdLine = 0;
 WCHAR           szTitle[MAX_LOADSTRING];
 WCHAR           szWindowClass[MAX_LOADSTRING];
-UINT            updateRate = 500;
+UINT            updateRate = 100;
 BOOL            autoStartup = false;
+BOOL            bCheckUpdate = false;
 BOOL            hideTrayIcon = false;
 NOTIFYICONDATA  nid = {sizeof(nid)};
 BOOL            bPortable = true;
+BOOL            bHideMainPannelAd = false;
+BOOL            bUpdateBannerAdRegistry = false;
 
 // Forward-declaration
 ATOM             MyRegisterClass(HINSTANCE hInstance);
@@ -20,13 +25,16 @@ BOOL             InitInstance(HINSTANCE, int);
 BOOL             CheckMultipleExecution(HINSTANCE hInst, HWND hWnd, WCHAR szWindowClass[MAX_LOADSTRING]);
 BOOL             HideTrayIcon(HINSTANCE hInst, HWND hWnd, NOTIFYICONDATA nid);
 BOOL             ToggleStartup(HWND hWnd);
+BOOL             ToggleCheckUpdate(HWND hWnd);
+BOOL             ToggleHideMainPannelAd(HWND hWnd);
+BOOL             ToggleUpdateBannerAdRegistry(HWND hWnd);
 BOOL             CheckStartup(HINSTANCE hInst, HWND hWnd);
 BOOL             CreateTrayIcon(HWND hWnd, NOTIFYICONDATA* nid);
 BOOL             DeleteTrayIcon(NOTIFYICONDATA nid);
 VOID             ShowContextMenu(HWND hwnd, POINT pt);
-BOOL             ShowNewUpdateBalloon();
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 VOID CALLBACK    TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer);
+std::wstring     GetLatestReleaseTag(const std::wstring& owner, const std::wstring& repo);
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
@@ -131,10 +139,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		}
 		break;
 	case WM_INITMENU:
-		if (autoStartup)
-			CheckMenuItem((HMENU) wParam, IDM_STARTONSYSTEMSTARTUP, MF_BYCOMMAND | MF_CHECKED);
-		else
-			CheckMenuItem((HMENU) wParam, IDM_STARTONSYSTEMSTARTUP, MF_BYCOMMAND | MF_UNCHECKED);
+		CheckMenuItem((HMENU)wParam, IDM_STARTONSYSTEMSTARTUP, MF_BYCOMMAND | (autoStartup ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem((HMENU)wParam, IDM_CHECKUPDATE, MF_BYCOMMAND | (bCheckUpdate ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem((HMENU)wParam, IDM_HIDEMAINPANNELAD, MF_BYCOMMAND | (bHideMainPannelAd ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem((HMENU)wParam, IDM_UPDATEBANNERADREGISTRY, MF_BYCOMMAND | (bUpdateBannerAdRegistry ? MF_CHECKED : MF_UNCHECKED));
 
 	case WM_COMMAND:
 	{
@@ -144,6 +152,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			break;
 		case IDM_STARTONSYSTEMSTARTUP:
 			ToggleStartup(hWnd);
+			break;
+		case IDM_CHECKUPDATE:
+			ToggleCheckUpdate(hWnd);
+			break;
+		case IDM_HIDEMAINPANNELAD:
+			ToggleHideMainPannelAd(hWnd);
+			break;
+		case IDM_UPDATEBANNERADREGISTRY:
+			ToggleUpdateBannerAdRegistry(hWnd);
 			break;
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
@@ -165,29 +182,79 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 }
 
 BOOL CheckStartup(HINSTANCE hInst, HWND hWnd) {
-	// Check autoStartup
+	// Check autoruns
 	HKEY key; DWORD dwDisp;
 	RegCreateKeyEx(HKEY_CURRENT_USER, REG_RUN, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, &dwDisp);
-
-	if (RegQueryValueExW(key, L"KakaoTalkAdGuard", 0, NULL, 0, NULL) == NO_ERROR) {
-		autoStartup = true;
-	} else {
-		autoStartup = false;
-	}
+	autoStartup = (RegQueryValueExW(key, L"KakaoTalkAdGuard", 0, NULL, 0, NULL) == NO_ERROR);
 	RegCloseKey(key);
 	SendMessage(hWnd, WM_INITMENU, 0, 0);
-
+	
 	// Check HideTrayIcon
 	RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &key, &dwDisp);
 	DWORD dwType = REG_DWORD;
-	DWORD dwValue = 0;
 	DWORD dwDataSize = sizeof(DWORD);
-	DWORD ret = RegQueryValueExW(key, L"HideTrayIcon", 0, &dwType, (LPBYTE) &dwValue, &dwDataSize);
-	if (dwValue) {
-		hideTrayIcon = TRUE;
-	} else {
-		hideTrayIcon = FALSE;
+	DWORD dwValue = 0;
+	hideTrayIcon = (RegQueryValueExW(key, L"HideTrayIcon", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize) == ERROR_SUCCESS && dwValue != 0);
+	bCheckUpdate = (RegQueryValueExW(key, L"CheckUpdate", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize) == ERROR_SUCCESS && dwValue != 0);
+	bHideMainPannelAd = (RegQueryValueExW(key, L"HideMainPannelAd", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize) == ERROR_SUCCESS && dwValue != 0);
+	bUpdateBannerAdRegistry = (RegQueryValueExW(key, L"UpdateBannerAdRegistry", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize) == ERROR_SUCCESS && dwValue != 0);
+
+	RegCloseKey(key);
+
+	// Check updates
+	if (bCheckUpdate) {
+		std::wstring latest = GetLatestReleaseTag(L"loopback-kr", L"KakaoTalkAdGuard");
+		if (!latest.empty()) {
+			WCHAR buffer[256] = { 0 };
+			int len = LoadStringW(GetModuleHandle(NULL), IDS_APP_VERSION, buffer, _countof(buffer));
+			std::wstring current = std::wstring(buffer, len);
+
+			if (latest != current) {
+				/*NOTIFYICONDATA nid = { sizeof(nid) };
+				nid.uFlags = NIF_INFO;
+				nid.dwInfoFlags = NIIF_INFO;
+				LoadStringW(hInst, IDS_NEWUPDATE_TITLE, nid.szInfoTitle, ARRAYSIZE(nid.szInfoTitle));
+				LoadStringW(hInst, IDS_NEWUPDATE_CONTENT, nid.szInfo, ARRAYSIZE(nid.szInfo));*/
+				std::wstring msg = L"New update released.\n\nCurrent version: " + current + L"\nLatest version: " + latest + L"\n\n"
+					L"Do you want to open the release website?";
+				int ret = MessageBoxW(hWnd, msg.c_str(), L"KakaoTalk AdGuard",
+					MB_YESNO | MB_ICONQUESTION);
+
+				if (ret == IDYES) {
+					ShellExecuteW(NULL, L"open", L"https://github.com/loopback-kr/KakaoTalkAdGuard/releases", NULL, NULL, SW_SHOWNORMAL);
+				}
+			}
+		}
 	}
+
+	return 0;
+}
+
+BOOL ToggleHideMainPannelAd(HWND hWnd) {
+	DWORD dwValue = 0; DWORD dwType = REG_DWORD; HKEY key; DWORD dwDisp; BOOL regHideMainPannelAd; DWORD dwDataSize = sizeof(DWORD);
+	RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, &dwDisp);
+	regHideMainPannelAd = (RegQueryValueExW(key, L"HideMainPannelAd", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize) == ERROR_SUCCESS && dwValue != 0);
+	bHideMainPannelAd = not regHideMainPannelAd;
+	RegSetValueExW(key, L"HideMainPannelAd", 0, REG_DWORD, (const BYTE*)&bHideMainPannelAd, sizeof(bHideMainPannelAd));
+	RegCloseKey(key);
+	return 0;
+}
+BOOL ToggleUpdateBannerAdRegistry(HWND hWnd) {
+	DWORD dwValue = 0; DWORD dwType = REG_DWORD; HKEY key; DWORD dwDisp; BOOL regUpdateBannerAdRegistry; DWORD dwDataSize = sizeof(DWORD);
+	RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, &dwDisp);
+	regUpdateBannerAdRegistry = (RegQueryValueExW(key, L"UpdateBannerAdRegistry", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize) == ERROR_SUCCESS && dwValue != 0);
+	bUpdateBannerAdRegistry = not regUpdateBannerAdRegistry;
+	RegSetValueExW(key, L"UpdateBannerAdRegistry", 0, REG_DWORD, (const BYTE*)&bUpdateBannerAdRegistry, sizeof(bUpdateBannerAdRegistry));
+	RegCloseKey(key);
+	return 0;
+}
+
+BOOL ToggleCheckUpdate(HWND hWnd) {
+	DWORD dwValue = 0; DWORD dwType = REG_DWORD; HKEY key; DWORD dwDisp; BOOL regCheckUpdate; DWORD dwDataSize = sizeof(DWORD);
+	RegCreateKeyEx(HKEY_CURRENT_USER, REG_CFG, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, &dwDisp);
+	regCheckUpdate = (RegQueryValueExW(key, L"CheckUpdate", 0, &dwType, (LPBYTE)&dwValue, &dwDataSize) == ERROR_SUCCESS && dwValue != 0);
+	bCheckUpdate = not regCheckUpdate;
+	RegSetValueExW(key, L"CheckUpdate", 0, REG_DWORD, (const BYTE*)&bCheckUpdate, sizeof(bCheckUpdate));
 	RegCloseKey(key);
 	return 0;
 }
@@ -240,15 +307,6 @@ BOOL CheckMultipleExecution(HINSTANCE hInst, HWND hWnd, WCHAR szWindowClass[MAX_
 	return 0;
 }
 
-BOOL ShowNewUpdateBalloon() {
-	NOTIFYICONDATA nid = {sizeof(nid)};
-	nid.uFlags = NIF_INFO;
-	nid.dwInfoFlags = NIIF_INFO;
-	LoadStringW(hInst, IDS_NEWUPDATE_TITLE, nid.szInfoTitle, ARRAYSIZE(nid.szInfoTitle));
-	LoadStringW(hInst, IDS_NEWUPDATE_CONTENT, nid.szInfo, ARRAYSIZE(nid.szInfo));
-	return Shell_NotifyIcon(NIM_MODIFY, &nid);
-}
-
 BOOL CreateTrayIcon(HWND hWnd, NOTIFYICONDATA* nid) {
 	nid->hWnd = hWnd;
 	nid->uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | NIF_SHOWTIP;
@@ -294,16 +352,6 @@ void ShowContextMenu(HWND hwnd, POINT pt) {
 	}
 	TrackPopupMenuEx(hSubMenu, uFlags, pt.x, pt.y, hwnd, NULL);
 	DestroyMenu(hMenu);
-}
-
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lparam) {
-	DWORD pid = 0;
-	GetWindowThreadProcessId(hwnd, &pid);
-	if ((DWORD) lparam == pid) {
-		return FALSE; // found
-	} else {
-		return TRUE; // continue
-	}
 }
 
 HWND hKakaoTalkMain;
@@ -371,43 +419,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
 		if (hLockdownNumpad != NULL)
 			SetWindowPos(hwnd, HWND_TOP, 0, 0, (RectKakaoTalkMain.right - RectKakaoTalkMain.left), (RectKakaoTalkMain.bottom - RectKakaoTalkMain.top), SWP_NOMOVE);
 	}
-	//if (wcscmp(className, L"BannerAdWnd") == 0) {
-	//	ShowWindow(hwnd, SW_HIDE);
-	//	return TRUE;
-	//}
-	//if (wcscmp(className, L"RichPopWnd") == 0) {
-	//	ShowWindow(hwnd, SW_HIDE);
-	//	return TRUE;
-	//}
-	//if (wcscmp(className, L"EVA_VH_ListControl_Dblclk") == 0) {
-	//	InvalidateRect(hwnd, NULL, TRUE);
-	//	return TRUE;
-	//}
-
-	/*if (wcsncmp(className, L"Chrome_WidgetWin_", 17) == 0) {
-		ShowWindow(hwnd, SW_HIDE);
-		parentHandle = GetParent(parentHandle);
-		ShowWindow(parentHandle, SW_HIDE);
-		parentHandle = GetParent(parentHandle);
-		ShowWindow(parentHandle, SW_HIDE);
-		parentHandle = GetParent(parentHandle);
-		ShowWindow(parentHandle, SW_HIDE);
-		return TRUE;
-	}*/
-	//if (wcscmp(className, L"Intermediate D3D Window") == 0) {
-	//	parentHandle = GetParent(parentHandle);
-	//	GetClassName(parentHandle, parentClassName, 256);
-	//	if (wcsncmp(parentClassName, L"Chrome_WidgetWin_", 17) == 0) {
-	//		ShowWindow(hwnd, SW_HIDE);
-	//		//ShowWindow(parentHandle, SW_HIDE);
-	//	}
-	//	return TRUE;
-	//}
-
-
-	//if (wcscmp(className, L"EVA_Window_Dblclk") == 0 && parentHandle == ownerHandle) {
-	//	ShowWindow(hwnd, SW_HIDE);
-	//}
+	InvalidateRect(parentHandle, NULL, TRUE);
 
 	return TRUE;
 }
@@ -446,6 +458,84 @@ void SetLUDForAllSubkeys() {
 	RegCloseKey(hParentKey);
 }
 
+std::wstring GetLatestReleaseTag(const std::wstring& owner, const std::wstring& repo) {
+	HINTERNET hSession = WinHttpOpen(L"KakaoTalkAdGuard/1.0",
+		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+		WINHTTP_NO_PROXY_NAME,
+		WINHTTP_NO_PROXY_BYPASS,
+		0);
+	if (!hSession) return L"";
+
+	HINTERNET hConnect = WinHttpConnect(hSession, L"api.github.com",
+		INTERNET_DEFAULT_HTTPS_PORT, 0);
+	if (!hConnect) {
+		WinHttpCloseHandle(hSession);
+		return L"";
+	}
+
+	std::wstring path = L"/repos/" + owner + L"/" + repo + L"/releases/latest";
+	HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"GET", path.c_str(),
+		NULL, WINHTTP_NO_REFERER,
+		WINHTTP_DEFAULT_ACCEPT_TYPES,
+		WINHTTP_FLAG_SECURE);
+	if (!hRequest) {
+		WinHttpCloseHandle(hConnect);
+		WinHttpCloseHandle(hSession);
+		return L"";
+	}
+
+	const wchar_t* userAgentHeader = L"User-Agent: Win32App";
+	WinHttpAddRequestHeaders(hRequest, userAgentHeader, -1, WINHTTP_ADDREQ_FLAG_ADD);
+
+	BOOL bResults = WinHttpSendRequest(hRequest,
+		WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+		WINHTTP_NO_REQUEST_DATA, 0,
+		0, 0);
+
+	if (bResults) bResults = WinHttpReceiveResponse(hRequest, NULL);
+
+	std::wstring response;
+	if (bResults) {
+		DWORD dwSize = 0;
+		do {
+			DWORD dwDownloaded = 0;
+			if (!WinHttpQueryDataAvailable(hRequest, &dwSize)) break;
+
+			if (dwSize == 0) break;
+
+			char* buffer = new char[dwSize + 1];
+			ZeroMemory(buffer, dwSize + 1);
+
+			if (WinHttpReadData(hRequest, buffer, dwSize, &dwDownloaded)) {
+				std::wstring wbuf;
+				int len = MultiByteToWideChar(CP_UTF8, 0, buffer, dwDownloaded, NULL, 0);
+				if (len > 0) {
+					wbuf.resize(len);
+					MultiByteToWideChar(CP_UTF8, 0, buffer, dwDownloaded, &wbuf[0], len);
+					response += wbuf;
+				}
+			}
+			delete[] buffer;
+		} while (dwSize > 0);
+	}
+
+	WinHttpCloseHandle(hRequest);
+	WinHttpCloseHandle(hConnect);
+	WinHttpCloseHandle(hSession);
+
+	std::wstring tag = L"";
+	size_t pos = response.find(L"\"tag_name\"");
+	if (pos != std::wstring::npos) {
+		size_t start = response.find(L"\"", pos + 10);
+		size_t end = response.find(L"\"", start + 1);
+		if (start != std::wstring::npos && end != std::wstring::npos) {
+			tag = response.substr(start + 1, end - start - 1);
+		}
+	}
+
+	return tag;
+}
+
 VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 	switch (idEvent) {
 	case 1: // Remove KakaoTalk ADs
@@ -459,13 +549,19 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTimer) {
 		}
 
 		// Block popup AD
-		SetLUDForAllSubkeys();
+		if (bUpdateBannerAdRegistry == 1) {
+			SetLUDForAllSubkeys();
+		}
 
 		// Scan ADs recursive
-		GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
-		FIND_DATA targetClassName = { L"EVA_Window_Dblclk", FALSE };
-		EnumWindows(EnumWindowProc, (LPARAM)&targetClassName);
-		EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
+		HWND hParent = GetParent(hwnd);
+		if (bHideMainPannelAd) {
+			GetWindowRect(hKakaoTalkMain, &RectKakaoTalkMain);
+			FIND_DATA targetClassName = { L"EVA_Window_Dblclk", FALSE };
+			EnumWindows(EnumWindowProc, (LPARAM)&targetClassName);
+			EnumChildWindows(hKakaoTalkMain, EnumChildProc, NULL);
+		}
+
 		break;
 	}
 }

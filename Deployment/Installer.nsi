@@ -1,4 +1,5 @@
 !include "MUI.nsh"
+!include "nsDialogs.nsh"
 !include "WinMessages.nsh"
 !include "FileFunc.nsh"
 !include "x64.nsh"
@@ -7,7 +8,7 @@
 !define PRODUCT_FULLNAME "KakaoTalk AdGuard"
 !define PRODUCT_NAME "KakaoTalkAdGuard"
 !define PRODUCT_COMMENTS "Ad removal tool for Windows KakaoTalk"
-!define PRODUCT_VERSION "1.1.0.0"
+!define PRODUCT_VERSION "1.2.0.0"
 !define BUILD_ARCH "x64"
 !define PRODUCT_PUBLISHER "loopback.kr"
 !define PRODUCT_REG_ROOTKEY "HKCU"
@@ -21,9 +22,62 @@
 !define MUI_FINISHPAGE_RUN_PARAMETERS "--startup"
 !define MUI_FINISHPAGE_RUN_TEXT "Run ${PRODUCT_FULLNAME}"
 
+Var Dialog
+Var CheckRun
+Var CheckUpdate
+Var Autorun
+Var tmpState
+
+Function CreateFinishPage
+  nsDialogs::Create 1018
+  Pop $Dialog
+  ${If} $Dialog == error
+    Abort
+  ${EndIf}
+
+  ${NSD_CreateLabel} 0u 10u 100% 12u "Installation complete. Choose options below:"
+  Pop $0
+
+  ${NSD_CreateCheckbox} 10u 30u 90% 12u "Run ${PRODUCT_FULLNAME}"
+  Pop $CheckRun
+  ${NSD_SetState} $CheckRun 1
+
+  ${NSD_CreateCheckbox} 10u 50u 90% 12u "Autostart ${PRODUCT_FULLNAME} on system startup"
+  Pop $Autorun
+  ${NSD_SetState} $Autorun 1
+
+  ${NSD_CreateCheckbox} 10u 70u 90% 12u "Enable update check on startup"
+  Pop $CheckUpdate
+  ${NSD_SetState} $CheckUpdate 1
+
+  nsDialogs::Show
+FunctionEnd
+
+Function LeaveFinishPage
+  ${NSD_GetState} $CheckRun $tmpState
+  ${If} $tmpState == 1
+    IfFileExists "$INSTDIR\${PRODUCT_NAME}.exe" 0 +2
+      Exec '"$INSTDIR\${PRODUCT_NAME}.exe" --startup'
+  ${EndIf}
+
+  ${NSD_GetState} $CheckUpdate $tmpState
+  ${If} $tmpState == 1
+    WriteRegDWORD HKCU "Software\${PRODUCT_NAME}" "CheckUpdate" 1
+  ${Else}
+    DeleteRegValue HKCU "Software\${PRODUCT_NAME}" "CheckUpdate"
+  ${EndIf}
+
+  ${NSD_GetState} $Autorun $tmpState
+  ${If} $tmpState == 1
+    WriteRegStr HKCU "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\" "${PRODUCT_NAME}" '"$INSTDIR\${PRODUCT_NAME}.exe" --startup'
+  ${Else}
+    DeleteRegValue HKCU "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\" "${PRODUCT_NAME}"
+  ${EndIf}
+FunctionEnd
+
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-!insertmacro MUI_PAGE_FINISH
+Page custom CreateFinishPage LeaveFinishPage
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_UNPAGE_FINISH
 !insertmacro MUI_LANGUAGE "English"
@@ -55,18 +109,21 @@ Function .onInit
     notRunning:
 FunctionEnd
 
-Section "Installer Section"
+Section ""
     SetOutPath $INSTDIR
     ${If} ${RunningX64}
-        File /oname=${PRODUCT_NAME}.exe "..\Release\x64\${PRODUCT_NAME}.x64.exe"
+        File /oname=${PRODUCT_NAME}.exe "..\bin\Release\x64\${PRODUCT_NAME}.x64.exe"
     ${Else}
-        File /oname=${PRODUCT_NAME}.exe "..\Release\win32\${PRODUCT_NAME}.x86.exe"
+        File /oname=${PRODUCT_NAME}.exe "..\bin\Release\x86\${PRODUCT_NAME}.x86.exe"
     ${EndIf}
     ; File "RestoreTrayIcon.exe"
     CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
     CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_FULLNAME}.lnk" "$INSTDIR\${PRODUCT_NAME}.exe" "--startup"
     CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\Restore tray icon.lnk" "$INSTDIR\${PRODUCT_NAME}.exe" "--restore_tray"
     CreateShortcut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+
+    WriteRegDWORD HKCU "Software\${PRODUCT_NAME}" "HideMainPannelAd" 1
+    WriteRegDWORD HKCU "Software\${PRODUCT_NAME}" "UpdateBannerAdRegistry" 1
 
     WriteUninstaller "$INSTDIR\Uninstall.exe"
     WriteRegStr ${PRODUCT_REG_ROOTKEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_FULLNAME}"
